@@ -17,10 +17,12 @@ app.mount("/static", StaticFiles(directory="app/static"), name="static")
 templates = Jinja2Templates(directory="app/templates")
 
 # Include routers
-from app.routes import auth, customer
+from app.routes import auth, customer, admin, api
 
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(customer.router, prefix="/customer", tags=["customer"])
+app.include_router(admin.router, prefix="/admin", tags=["admin"])
+app.include_router(api.router, prefix="/api", tags=["api"])
 
 @app.get("/")
 async def root():

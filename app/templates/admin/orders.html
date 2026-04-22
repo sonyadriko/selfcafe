@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Pesanan - Admin{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-100">
+    <div class="fixed left-0 top-0 h-full w-64 bg-amber-800 text-white">
+        <div class="p-4 border-b border-amber-700">
+            <h1 class="text-xl font-bold">Sowan Kopi</h1>
+            <p class="text-amber-200 text-sm">Admin Panel</p>
+        </div>
+        <nav class="p-4">
+            <a href="/admin/dashboard" class="block py-2 px-4 rounded hover:bg-amber-700 mb-2">Dashboard</a>
+            <a href="/admin/orders" class="block py-2 px-4 rounded bg-amber-700 mb-2">Pesanan</a>
+            <a href="/admin/menus" class="block py-2 px-4 rounded hover:bg-amber-700 mb-2">Menu</a>
+            <a href="/auth/logout" class="block py-2 px-4 rounded hover:bg-amber-700 mt-8">Logout</a>
+        </nav>
+    </div>
+
+    <div class="ml-64 p-8">
+        <h2 class="text-2xl font-bold mb-6">Daftar Pesanan</h2>
+
+        <div class="flex gap-4 mb-6">
+            <button onclick="filterOrders('all')" class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300">Semua</button>
+            <button onclick="filterOrders('pending')" class="px-4 py-2 rounded-lg bg-yellow-200 hover:bg-yellow-300">Pending</button>
+            <button onclick="filterOrders('paid')" class="px-4 py-2 rounded-lg bg-green-200 hover:bg-green-300">Paid</button>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+            <table class="w-full" id="ordersTable">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="text-left py-3 px-4">ID</th>
+                        <th class="text-left py-3 px-4">Meja</th>
+                        <th class="text-left py-3 px-4">Items</th>
+                        <th class="text-left py-3 px-4">Total</th>
+                        <th class="text-left py-3 px-4">Status</th>
+                        <th class="text-left py-3 px-4">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr class="border-b hover:bg-gray-50" data-status="{{ order.status }}">
+                        <td class="py-3 px-4 font-semibold">#{{ order.id }}</td>
+                        <td class="py-3 px-4">{{ order.table_number }}</td>
+                        <td class="py-3 px-4">
+                            {% for item in order.items %}
+                            <div class="text-sm">{{ item.quantity }}x {{ item.menu.name if item.menu else 'N/A' }}</div>
+                            {% endfor %}
+                        </td>
+                        <td class="py-3 px-4 font-semibold">Rp {{ order.total_amount|int }}</td>
+                        <td class="py-3 px-4">
+                            <select onchange="updateStatus({{ order.id }}, this.value)" class="px-2 py-1 rounded border">
+                                <option value="pending" {% if order.status == 'pending' %}selected{% endif %}>Pending</option>
+                                <option value="paid" {% if order.status == 'paid' %}selected{% endif %}>Paid</option>
+                                <option value="completed" {% if order.status == 'completed' %}selected{% endif %}>Completed</option>
+                            </select>
+                        </td>
+                        <td class="py-3 px-4">
+                            <span class="text-gray-500">{{ order.created_at.strftime('%H:%M') }}</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+async function updateStatus(orderId, status) {
+    const response = await fetch(`/admin/orders/${orderId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: status })
+    });
+
+    if (response.ok) {
+        location.reload();
+    } else {
+        alert('Gagal update status');
+    }
+}
+
+function filterOrders(status) {
+    const rows = document.querySelectorAll('#ordersTable tbody tr');
+    rows.forEach(row => {
+        if (status === 'all' || row.dataset.status === status) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+</script>
+{% endblock %}
