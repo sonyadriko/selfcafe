@@ -3,81 +3,106 @@
 {% block title %}Menu Management - Admin{% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-gray-100">
-    <div class="fixed left-0 top-0 h-full w-64 bg-amber-800 text-white">
-        <div class="p-4 border-b border-amber-700">
-            <h1 class="text-xl font-bold">Sowan Kopi</h1>
-            <p class="text-amber-200 text-sm">Admin Panel</p>
+<div class="min-h-screen bg-canvas">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="mb-8 pb-4" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <div class="eyebrow mb-2" style="--color-light-signal-orange: var(--color-coffee-light);">
+                SOWAN KOPI
+            </div>
+            <p class="text-small text-white" style="opacity: 0.7;">Admin Panel</p>
         </div>
-        <nav class="p-4">
-            <a href="/admin/dashboard" class="block py-2 px-4 rounded hover:bg-amber-700 mb-2">Dashboard</a>
-            <a href="/admin/orders" class="block py-2 px-4 rounded hover:bg-amber-700 mb-2">Pesanan</a>
-            <a href="/admin/menus" class="block py-2 px-4 rounded bg-amber-700 mb-2">Menu</a>
-            <a href="/auth/logout" class="block py-2 px-4 rounded hover:bg-amber-700 mt-8">Logout</a>
+        <nav>
+            <a href="/admin/dashboard" class="sidebar-link">
+                <span class="text-small">Dashboard</span>
+            </a>
+            <a href="/admin/orders" class="sidebar-link">
+                <span class="text-small">Pesanan</span>
+            </a>
+            <a href="/admin/menus" class="sidebar-link active">
+                <span class="text-small">Menu</span>
+            </a>
+            <div style="margin-top: 48px;"></div>
+            <a href="/auth/logout" class="sidebar-link" style="--color-light-signal-orange: var(--color-signal-orange);">
+                <span class="text-small">Logout</span>
+            </a>
         </nav>
-    </div>
+    </aside>
 
-    <div class="ml-64 p-8">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold">Kelola Menu</h2>
-            <button onclick="openAddModal()" class="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700">+ Tambah Menu</button>
+    <!-- Main Content -->
+    <main style="margin-left: 280px; padding: 48px;">
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <div class="eyebrow mb-4">
+                    <span>MANAGEMENT</span>
+                </div>
+                <h1 class="h1">Kelola Menu</h1>
+            </div>
+            <button onclick="openAddModal()" class="btn btn-primary">
+                + Tambah Menu
+            </button>
         </div>
 
-        <div class="grid grid-cols-4 gap-6" id="menuGrid">
+        <!-- Menu Grid -->
+        <div class="grid grid-4 gap-4" id="menuGrid">
             {% for menu in menus %}
-            <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div class="card card-stadium">
                 {% if menu.image_url %}
-                <img src="{{ menu.image_url }}" alt="{{ menu.name }}" class="w-full h-40 object-cover">
+                <img src="{{ menu.image_url }}" alt="{{ menu.name }}" style="width: 100%; height: 180px; object-fit: cover;">
                 {% else %}
-                <div class="w-full h-40 bg-gray-200 flex items-center justify-center text-gray-400">No Image</div>
+                <div style="width: 100%; height: 180px; background: var(--color-lifted-cream); display: flex; align-items: center; justify-content: center;" class="text-muted">No Image</div>
                 {% endif %}
-                <div class="p-4">
-                    <h3 class="font-semibold text-lg">{{ menu.name }}</h3>
-                    <p class="text-gray-500 text-sm mb-2">{{ menu.description or '-' }}</p>
-                    <p class="font-bold text-amber-700">Rp {{ menu.price|int }}</p>
-                    <p class="text-sm text-gray-500">Stok: {{ menu.stock }}</p>
-                    <div class="flex gap-2 mt-3">
-                        <button onclick="openEditModal({{ menu.id }})" class="flex-1 bg-blue-600 text-white py-2 rounded text-sm hover:bg-blue-700">Edit</button>
-                        <button onclick="deleteMenu({{ menu.id }})" class="flex-1 bg-red-600 text-white py-2 rounded text-sm hover:bg-red-700">Hapus</button>
+                <div style="padding: 20px;">
+                    <h3 class="h3 mb-2">{{ menu.name }}</h3>
+                    <p class="text-small text-muted mb-3">{{ menu.description or '-' }}</p>
+                    <p class="font-semibold" style="color: var(--color-coffee-medium); font-size: 18px;">Rp {{ menu.price|int }}</p>
+                    <p class="text-small text-muted mb-4">Stok: {{ menu.stock }}</p>
+                    <div class="flex gap-2">
+                        <button onclick="openEditModal({{ menu.id }})" class="btn btn-secondary btn-sm">Edit</button>
+                        <button onclick="deleteMenu({{ menu.id }})" class="btn btn-signal btn-sm">Hapus</button>
                     </div>
                 </div>
             </div>
             {% endfor %}
         </div>
-    </div>
+    </main>
 
-    <div id="menuModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
-        <div class="bg-white rounded-xl p-6 w-full max-w-md">
-            <h2 id="modalTitle" class="text-xl font-bold mb-4">Tambah Menu</h2>
+    <!-- Modal -->
+    <div class="modal-overlay" id="menuModal" style="display: none;">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="h3" id="modalTitle">Tambah Menu</h2>
+                <button onclick="closeModal()" class="close-btn">&times;</button>
+            </div>
             <form id="menuForm">
                 <input type="hidden" id="menuId">
-                <div class="mb-4">
-                    <label class="block text-gray-700 mb-2">Nama Menu</label>
-                    <input type="text" id="menuName" required class="w-full px-4 py-2 border rounded-lg">
+                <div class="mb-6">
+                    <label class="block text-small font-semibold mb-2" style="letter-spacing: 0.04em; text-transform: uppercase;">Nama Menu</label>
+                    <input type="text" id="menuName" required class="input" placeholder="Masukkan nama menu">
                 </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700 mb-2">Deskripsi</label>
-                    <textarea id="menuDesc" class="w-full px-4 py-2 border rounded-lg"></textarea>
+                <div class="mb-6">
+                    <label class="block text-small font-semibold mb-2" style="letter-spacing: 0.04em; text-transform: uppercase;">Deskripsi</label>
+                    <textarea id="menuDesc" class="input" rows="3" placeholder="Deskripsi menu"></textarea>
                 </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700 mb-2">Harga</label>
-                    <input type="number" id="menuPrice" required class="w-full px-4 py-2 border rounded-lg">
+                <div class="mb-6">
+                    <label class="block text-small font-semibold mb-2" style="letter-spacing: 0.04em; text-transform: uppercase;">Harga</label>
+                    <input type="number" id="menuPrice" required class="input" placeholder="Harga dalam rupiah">
                 </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700 mb-2">Kategori ID</label>
-                    <input type="number" id="menuCategory" required class="w-full px-4 py-2 border rounded-lg" value="1">
+                <div class="mb-6">
+                    <label class="block text-small font-semibold mb-2" style="letter-spacing: 0.04em; text-transform: uppercase;">Kategori ID</label>
+                    <input type="number" id="menuCategory" required class="input" value="1">
                 </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700 mb-2">Stok</label>
-                    <input type="number" id="menuStock" class="w-full px-4 py-2 border rounded-lg" value="0">
+                <div class="mb-6">
+                    <label class="block text-small font-semibold mb-2" style="letter-spacing: 0.04em; text-transform: uppercase;">Stok</label>
+                    <input type="number" id="menuStock" class="input" value="0">
                 </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700 mb-2">Image URL</label>
-                    <input type="text" id="menuImage" class="w-full px-4 py-2 border rounded-lg">
+                <div class="mb-6">
+                    <label class="block text-small font-semibold mb-2" style="letter-spacing: 0.04em; text-transform: uppercase;">Image URL</label>
+                    <input type="text" id="menuImage" class="input" placeholder="https://...">
                 </div>
                 <div class="flex gap-4">
-                    <button type="submit" class="flex-1 bg-amber-600 text-white py-2 rounded-lg hover:bg-amber-700">Simpan</button>
-                    <button type="button" onclick="closeModal()" class="flex-1 bg-gray-300 py-2 rounded-lg hover:bg-gray-400">Batal</button>
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">Simpan</button>
+                    <button type="button" onclick="closeModal()" class="btn btn-secondary" style="flex: 1;">Batal</button>
                 </div>
             </form>
         </div>
@@ -89,7 +114,7 @@ function openAddModal() {
     document.getElementById('modalTitle').textContent = 'Tambah Menu';
     document.getElementById('menuForm').reset();
     document.getElementById('menuId').value = '';
-    document.getElementById('menuModal').classList.remove('hidden');
+    document.getElementById('menuModal').style.display = 'flex';
 }
 
 function openEditModal(menuId) {
@@ -104,12 +129,12 @@ function openEditModal(menuId) {
             document.getElementById('menuCategory').value = menu.category_id;
             document.getElementById('menuStock').value = menu.stock;
             document.getElementById('menuImage').value = menu.image_url || '';
-            document.getElementById('menuModal').classList.remove('hidden');
+            document.getElementById('menuModal').style.display = 'flex';
         });
 }
 
 function closeModal() {
-    document.getElementById('menuModal').classList.add('hidden');
+    document.getElementById('menuModal').style.display = 'none';
 }
 
 document.getElementById('menuForm').addEventListener('submit', async (e) => {

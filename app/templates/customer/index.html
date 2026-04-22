@@ -2,56 +2,140 @@
 
 {% block title %}Menu - SelfCafe{% endblock %}
 
+{% block extra_head %}
+<style>
+.header-sticky {
+    position: sticky;
+    top: 24px;
+    z-index: 100;
+}
+
+.cart-panel {
+    position: fixed;
+    right: 0;
+    top: 0;
+    height: 100vh;
+    width: 100%;
+    max-width: 400px;
+    background: var(--color-white);
+    box-shadow: var(--shadow-card);
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    z-index: 1000;
+}
+
+.cart-panel.open {
+    transform: translateX(0);
+}
+
+.menu-item-img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    background: var(--color-lifted-cream);
+}
+
+.add-btn {
+    background: var(--color-coffee-medium);
+    color: var(--color-white);
+    border: none;
+    border-radius: var(--radius-pill);
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.add-btn:hover {
+    background: var(--color-coffee-dark);
+}
+
+.qty-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid var(--color-ink-black);
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.qty-btn:hover {
+    background: var(--color-lifted-cream);
+}
+
+.close-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    font-size: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50">
+<div class="min-h-screen bg-canvas">
     <!-- Header -->
-    <header class="bg-white shadow-sm sticky top-0 z-50">
-        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-amber-800">Sowan Kopi</h1>
+    <header class="header-sticky container">
+        <div class="nav-pill justify-between">
+            <h1 class="h3">Sowan Kopi</h1>
             <div class="flex items-center gap-4">
-                <span class="text-gray-600">Meja <span id="tableNumber" class="font-semibold text-amber-700">{{ table }}</span></span>
-                <button onclick="openCart()" class="relative bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700">
-                    <span id="cartCount">0</span>
+                <span class="text-small text-muted">Meja <span class="text-ink font-semibold" id="tableNumber">{{ table }}</span></span>
+                <button onclick="openCart()" class="btn btn-primary cart-badge">
+                    Keranjang
+                    <span class="cart-count" id="cartCount">0</span>
                 </button>
             </div>
         </div>
     </header>
 
-    <!-- Category Filter -->
-    <div class="max-w-6xl mx-auto px-4 py-4">
-        <div class="flex gap-2 overflow-x-auto pb-2" id="categoryFilters">
-            <button onclick="filterCategory('all')" class="category-btn active px-4 py-2 rounded-full bg-amber-600 text-white whitespace-nowrap">Semua</button>
+    <!-- Categories -->
+    <section class="section" style="padding-top: 48px">
+        <div class="container">
+            <div class="flex gap-2" style="overflow-x: auto; padding-bottom: 8px;" id="categoryFilters">
+                <button onclick="filterCategory('all')" class="category-pill active">Semua</button>
+            </div>
         </div>
-    </div>
+    </section>
 
     <!-- Menu Grid -->
-    <div class="max-w-6xl mx-auto px-4 pb-24">
-        <div id="menuGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            <!-- Menu items will be loaded here -->
+    <section class="section" style="padding-top: 0;">
+        <div class="container">
+            <div class="menu-grid" id="menuGrid">
+                <!-- Menu items loaded here -->
+            </div>
         </div>
-    </div>
+    </section>
 
-    <!-- Cart Modal -->
-    <div id="cartModal" class="fixed inset-0 bg-black/50 z-50 hidden">
-        <div class="absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-xl">
-            <div class="p-4 border-b flex justify-between items-center">
-                <h2 class="text-xl font-bold">Keranjang</h2>
-                <button onclick="closeCart()" class="text-gray-500 text-2xl">&times;</button>
-            </div>
-            <div id="cartItems" class="p-4 overflow-y-auto" style="max-height: calc(100vh - 200px);">
-                <!-- Cart items here -->
-            </div>
-            <div class="absolute bottom-0 left-0 right-0 p-4 bg-white border-t">
-                <div class="flex justify-between mb-4">
-                    <span class="font-semibold">Total:</span>
-                    <span id="cartTotal" class="font-bold text-xl">Rp 0</span>
-                </div>
-                <button onclick="placeOrder()" class="w-full bg-amber-600 text-white py-3 rounded-lg font-semibold hover:bg-amber-700">
-                    Pesan Sekarang
-                </button>
-            </div>
+    <!-- Cart Panel -->
+    <div class="cart-overlay" id="cartOverlay" onclick="closeCart()" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 999;"></div>
+    <aside class="cart-panel" id="cartPanel">
+        <div class="modal-header">
+            <h2 class="h3">Keranjang</h2>
+            <button class="close-btn" onclick="closeCart()">&times;</button>
         </div>
-    </div>
+        <div class="modal-body" id="cartItems" style="overflow-y: auto; max-height: calc(100vh - 200px);">
+            <!-- Cart items here -->
+        </div>
+        <div class="modal-footer">
+            <div class="flex justify-between mb-4">
+                <span class="font-semibold">Total:</span>
+                <span class="h3" id="cartTotal">Rp 0</span>
+            </div>
+            <button onclick="placeOrder()" class="btn btn-primary" style="width: 100%;">
+                Pesan Sekarang
+            </button>
+        </div>
+    </aside>
 </div>
 
 <script>
@@ -66,9 +150,9 @@ async function loadMenu() {
 
 function renderMenu(menus, categories) {
     const categoryFilters = document.getElementById('categoryFilters');
-    categoryFilters.innerHTML = '<button onclick="filterCategory(\'all\')" class="category-btn active px-4 py-2 rounded-full bg-amber-600 text-white whitespace-nowrap">Semua</button>';
+    categoryFilters.innerHTML = '<button onclick="filterCategory(\'all\')" class="category-pill active">Semua</button>';
     categories.forEach(cat => {
-        categoryFilters.innerHTML += `<button onclick="filterCategory('${cat.id}')" class="category-btn px-4 py-2 rounded-full bg-gray-200 text-gray-700 whitespace-nowrap">${cat.name}</button>`;
+        categoryFilters.innerHTML += `<button onclick="filterCategory('${cat.id}')" class="category-pill">${cat.name}</button>`;
     });
 
     window.allMenus = menus;
@@ -82,25 +166,26 @@ function filterCategory(categoryId) {
 
     const menuGrid = document.getElementById('menuGrid');
     menuGrid.innerHTML = filtered.map(menu => `
-        <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition">
-            ${menu.image_url ? `<img src="${menu.image_url}" alt="${menu.name}" class="w-full h-32 object-cover">` : '<div class="w-full h-32 bg-gray-200 flex items-center justify-center text-gray-400">No Image</div>'}
-            <div class="p-3">
-                <h3 class="font-semibold text-gray-800 truncate">${menu.name}</h3>
-                <p class="text-xs text-gray-500 truncate">${menu.description || ''}</p>
-                <div class="flex justify-between items-center mt-2">
-                    <span class="font-bold text-amber-700">Rp ${parseInt(menu.price).toLocaleString('id-ID')}</span>
-                    <button onclick="addToCart(${menu.id})" class="bg-amber-600 text-white px-3 py-1 rounded-full text-sm hover:bg-amber-700">+ Tambah</button>
+        <div class="menu-card">
+            ${menu.image_url ? `<img src="${menu.image_url}" alt="${menu.name}" class="menu-item-img">` : '<div class="menu-item-img flex items-center justify-center text-muted">No Image</div>'}
+            <div class="menu-card-content">
+                <h3 class="menu-card-title">${menu.name}</h3>
+                <p class="menu-card-description">${menu.description || ''}</p>
+                <div class="flex justify-between items-center">
+                    <span class="menu-card-price">Rp ${parseInt(menu.price).toLocaleString('id-ID')}</span>
+                    <button onclick="addToCart(${menu.id})" class="add-btn">+ Tambah</button>
                 </div>
             </div>
         </div>
     `).join('');
 
-    document.querySelectorAll('.category-btn').forEach(btn => {
-        btn.classList.remove('bg-amber-600', 'text-white');
-        btn.classList.add('bg-gray-200', 'text-gray-700');
+    document.querySelectorAll('.category-pill').forEach(btn => {
+        btn.classList.remove('active');
+        btn.style.backgroundColor = '';
+        btn.style.color = '';
+        btn.style.borderColor = '';
     });
-    event.target.classList.remove('bg-gray-200', 'text-gray-700');
-    event.target.classList.add('bg-amber-600', 'text-white');
+    event.target.classList.add('active');
 }
 
 function addToCart(menuId) {
@@ -126,18 +211,18 @@ function updateCartUI() {
 
     const cartItems = document.getElementById('cartItems');
     if (cart.length === 0) {
-        cartItems.innerHTML = '<p class="text-gray-500 text-center">Keranjang kosong</p>';
+        cartItems.innerHTML = '<p class="text-muted text-center">Keranjang kosong</p>';
     } else {
         cartItems.innerHTML = cart.map((item, index) => `
-            <div class="flex justify-between items-center py-2 border-b">
+            <div class="flex justify-between items-center" style="padding: 16px 0; border-bottom: 1px solid rgba(0,0,0,0.1);">
                 <div>
-                    <p class="font-medium">${item.name}</p>
-                    <p class="text-sm text-gray-500">Rp ${parseInt(item.price).toLocaleString('id-ID')}</p>
+                    <p class="font-semibold">${item.name}</p>
+                    <p class="text-small text-muted">Rp ${parseInt(item.price).toLocaleString('id-ID')}</p>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button onclick="updateQuantity(${index}, -1)" class="w-8 h-8 rounded-full bg-gray-200">-</button>
+                    <button onclick="updateQuantity(${index}, -1)" class="qty-btn">-</button>
                     <span>${item.quantity}</span>
-                    <button onclick="updateQuantity(${index}, 1)" class="w-8 h-8 rounded-full bg-gray-200">+</button>
+                    <button onclick="updateQuantity(${index}, 1)" class="qty-btn">+</button>
                 </div>
             </div>
         `).join('');
@@ -156,11 +241,13 @@ function updateQuantity(index, delta) {
 }
 
 function openCart() {
-    document.getElementById('cartModal').classList.remove('hidden');
+    document.getElementById('cartPanel').classList.add('open');
+    document.getElementById('cartOverlay').style.display = 'block';
 }
 
 function closeCart() {
-    document.getElementById('cartModal').classList.add('hidden');
+    document.getElementById('cartPanel').classList.remove('open');
+    document.getElementById('cartOverlay').style.display = 'none';
 }
 
 async function placeOrder() {
@@ -182,7 +269,6 @@ async function placeOrder() {
     });
 
     if (response.ok) {
-        const data = await response.json();
         cart = [];
         updateCartUI();
         closeCart();

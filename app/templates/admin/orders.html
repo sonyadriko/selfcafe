@@ -3,68 +3,86 @@
 {% block title %}Pesanan - Admin{% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-gray-100">
-    <div class="fixed left-0 top-0 h-full w-64 bg-amber-800 text-white">
-        <div class="p-4 border-b border-amber-700">
-            <h1 class="text-xl font-bold">Sowan Kopi</h1>
-            <p class="text-amber-200 text-sm">Admin Panel</p>
+<div class="min-h-screen bg-canvas">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="mb-8 pb-4" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <div class="eyebrow mb-2" style="--color-light-signal-orange: var(--color-coffee-light);">
+                SOWAN KOPI
+            </div>
+            <p class="text-small text-white" style="opacity: 0.7;">Admin Panel</p>
         </div>
-        <nav class="p-4">
-            <a href="/admin/dashboard" class="block py-2 px-4 rounded hover:bg-amber-700 mb-2">Dashboard</a>
-            <a href="/admin/orders" class="block py-2 px-4 rounded bg-amber-700 mb-2">Pesanan</a>
-            <a href="/admin/menus" class="block py-2 px-4 rounded hover:bg-amber-700 mb-2">Menu</a>
-            <a href="/auth/logout" class="block py-2 px-4 rounded hover:bg-amber-700 mt-8">Logout</a>
+        <nav>
+            <a href="/admin/dashboard" class="sidebar-link">
+                <span class="text-small">Dashboard</span>
+            </a>
+            <a href="/admin/orders" class="sidebar-link active">
+                <span class="text-small">Pesanan</span>
+            </a>
+            <a href="/admin/menus" class="sidebar-link">
+                <span class="text-small">Menu</span>
+            </a>
+            <div style="margin-top: 48px;"></div>
+            <a href="/auth/logout" class="sidebar-link" style="--color-light-signal-orange: var(--color-signal-orange);">
+                <span class="text-small">Logout</span>
+            </a>
         </nav>
-    </div>
+    </aside>
 
-    <div class="ml-64 p-8">
-        <h2 class="text-2xl font-bold mb-6">Daftar Pesanan</h2>
+    <!-- Main Content -->
+    <main style="margin-left: 280px; padding: 48px;">
+        <div class="eyebrow mb-4">
+            <span>PESANAN</span>
+        </div>
+        <h1 class="h1 mb-8">Daftar Pesanan</h1>
 
-        <div class="flex gap-4 mb-6">
-            <button onclick="filterOrders('all')" class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300">Semua</button>
-            <button onclick="filterOrders('pending')" class="px-4 py-2 rounded-lg bg-yellow-200 hover:bg-yellow-300">Pending</button>
-            <button onclick="filterOrders('paid')" class="px-4 py-2 rounded-lg bg-green-200 hover:bg-green-300">Paid</button>
+        <!-- Filters -->
+        <div class="flex gap-2 mb-8">
+            <button onclick="filterOrders('all')" class="category-pill active">Semua</button>
+            <button onclick="filterOrders('pending')" class="category-pill">Pending</button>
+            <button onclick="filterOrders('paid')" class="category-pill">Paid</button>
+            <button onclick="filterOrders('completed')" class="category-pill">Completed</button>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-            <table class="w-full" id="ordersTable">
-                <thead class="bg-gray-50">
+        <!-- Orders Table -->
+        <div class="card">
+            <table class="table" id="ordersTable">
+                <thead>
                     <tr>
-                        <th class="text-left py-3 px-4">ID</th>
-                        <th class="text-left py-3 px-4">Meja</th>
-                        <th class="text-left py-3 px-4">Items</th>
-                        <th class="text-left py-3 px-4">Total</th>
-                        <th class="text-left py-3 px-4">Status</th>
-                        <th class="text-left py-3 px-4">Aksi</th>
+                        <th>ID</th>
+                        <th>Meja</th>
+                        <th>Items</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Waktu</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for order in orders %}
-                    <tr class="border-b hover:bg-gray-50" data-status="{{ order.status }}">
-                        <td class="py-3 px-4 font-semibold">#{{ order.id }}</td>
-                        <td class="py-3 px-4">{{ order.table_number }}</td>
-                        <td class="py-3 px-4">
+                    <tr data-status="{{ order.status }}">
+                        <td class="text-small font-semibold">#{{ order.id }}</td>
+                        <td class="text-small">{{ order.table_number }}</td>
+                        <td class="text-small">
                             {% for item in order.items %}
-                            <div class="text-sm">{{ item.quantity }}x {{ item.menu.name if item.menu else 'N/A' }}</div>
+                            <div style="margin-bottom: 4px;">{{ item.quantity }}x {{ item.menu.name if item.menu else 'N/A' }}</div>
                             {% endfor %}
                         </td>
-                        <td class="py-3 px-4 font-semibold">Rp {{ order.total_amount|int }}</td>
-                        <td class="py-3 px-4">
-                            <select onchange="updateStatus({{ order.id }}, this.value)" class="px-2 py-1 rounded border">
+                        <td class="text-small font-semibold">Rp {{ order.total_amount|int }}</td>
+                        <td>
+                            <select onchange="updateStatus({{ order.id }}, this.value)"
+                                    class="input" style="padding: 6px 16px; font-size: 14px;">
                                 <option value="pending" {% if order.status == 'pending' %}selected{% endif %}>Pending</option>
                                 <option value="paid" {% if order.status == 'paid' %}selected{% endif %}>Paid</option>
                                 <option value="completed" {% if order.status == 'completed' %}selected{% endif %}>Completed</option>
                             </select>
                         </td>
-                        <td class="py-3 px-4">
-                            <span class="text-gray-500">{{ order.created_at.strftime('%H:%M') }}</span>
-                        </td>
+                        <td class="text-small text-muted">{{ order.created_at.strftime('%H:%M') }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-    </div>
+    </main>
 </div>
 
 <script>
@@ -91,6 +109,14 @@ function filterOrders(status) {
             row.style.display = 'none';
         }
     });
+
+    document.querySelectorAll('.category-pill').forEach(btn => {
+        btn.classList.remove('active');
+        btn.style.backgroundColor = '';
+        btn.style.color = '';
+        btn.style.borderColor = '';
+    });
+    event.target.classList.add('active');
 }
 </script>
 {% endblock %}
