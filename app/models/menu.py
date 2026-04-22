@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Decimal, Boolean, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Numeric
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.database import Base
@@ -18,7 +18,7 @@ class Menu(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(100), nullable=False, index=True)
     description = Column(String(500))
-    price = Column(Decimal(10, 2), nullable=False)
+    price = Column(Numeric(10, 2), nullable=False)
     image_url = Column(String(255))
     category_id = Column(Integer, ForeignKey("categories.id"))
     stock = Column(Integer, default=0)
