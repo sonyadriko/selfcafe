@@ -106,18 +106,21 @@ brainstorming → writing-plans → subagent-driven-development → code-review 
 Dispatch implementer → Self-review → Spec review → Code review → Commit → Next task
 ```
 
-## Custom Configuration
+## Related Documentation
 
-**RTK (Rust Token Killer)**: Token-optimized CLI proxy
+- **[CLAUDE.md](CLAUDE.md)** - Project overview and architecture
+- **[agents.md](agents.md)** - AI agents and session statistics
+- **[design.md](design.md)** - Mastercard design system specification
 
-```bash
-rtk gain              # Show token savings
-rtk discover          # Analyze missed opportunities
-```
+## Project References
 
-**Hooks**: SessionStart hooks configured for:
-- CAVEMAN MODE activation
-- Skill auto-invocation based on task patterns
+This project uses **Claude Code (Opus 4.6)** as the primary AI assistant with the `caveman` mode enabled for token optimization.
+
+**Development Statistics** (from `agents.md`):
+- 15+ commits
+- 40+ files created
+- ~3000+ lines of code
+- Mastercard-inspired CSS (~600 lines)
 
 ## Project-Specific Patterns
 

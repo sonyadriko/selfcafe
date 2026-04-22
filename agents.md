@@ -64,9 +64,8 @@ This document tracks AI agents used in developing the SelfCafe Ordering System.
 4. **Design System**: Mastercard-inspired (canvas cream, pill buttons, Inter font)
 5. **Frontend**: Vanilla JavaScript with Jinja2 (no frontend framework for simplicity)
 
-## Notes
+## Related Documentation
 
-- All subagent work followed TDD principles
-- Spec compliance reviewed before code quality
-- No critical security issues found in review
-- Design system applied after core functionality was complete
+- **[CLAUDE.md](CLAUDE.md)** - Project overview, development commands, architecture
+- **[skills.md](skills.md)** - Superpowers skills and workflows used
+- **[design.md](design.md)** - Mastercard-inspired design system specification

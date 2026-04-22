@@ -135,3 +135,9 @@ DEBUG=True
 This is a thesis project implementing a self-ordering system following Waterfall methodology. The scope is intentionally focused: ordering and transaction recording only. It does NOT include accounting, HPP calculation, or financial reconciliation.
 
 The design system follows Mastercard's visual language as specified in `design.md` - warm cream backgrounds, pill-shaped elements, soft shadows, and Inter typography.
+
+## Related Documentation
+
+- **[agents.md](agents.md)** - AI agents used, skills employed, session statistics
+- **[skills.md](skills.md)** - Superpowers skills and workflows
+- **[design.md](design.md)** - Full design system specification
