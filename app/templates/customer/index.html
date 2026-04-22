@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block title %}Menu - SelfCafe{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-amber-800">Sowan Kopi</h1>
+            <div class="flex items-center gap-4">
+                <span class="text-gray-600">Meja <span id="tableNumber" class="font-semibold text-amber-700">{{ table }}</span></span>
+                <button onclick="openCart()" class="relative bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700">
+                    <span id="cartCount">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Category Filter -->
+    <div class="max-w-6xl mx-auto px-4 py-4">
+        <div class="flex gap-2 overflow-x-auto pb-2" id="categoryFilters">
+            <button onclick="filterCategory('all')" class="category-btn active px-4 py-2 rounded-full bg-amber-600 text-white whitespace-nowrap">Semua</button>
+        </div>
+    </div>
+
+    <!-- Menu Grid -->
+    <div class="max-w-6xl mx-auto px-4 pb-24">
+        <div id="menuGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <!-- Menu items will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Cart Modal -->
+    <div id="cartModal" class="fixed inset-0 bg-black/50 z-50 hidden">
+        <div class="absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-xl">
+            <div class="p-4 border-b flex justify-between items-center">
+                <h2 class="text-xl font-bold">Keranjang</h2>
+                <button onclick="closeCart()" class="text-gray-500 text-2xl">&times;</button>
+            </div>
+            <div id="cartItems" class="p-4 overflow-y-auto" style="max-height: calc(100vh - 200px);">
+                <!-- Cart items here -->
+            </div>
+            <div class="absolute bottom-0 left-0 right-0 p-4 bg-white border-t">
+                <div class="flex justify-between mb-4">
+                    <span class="font-semibold">Total:</span>
+                    <span id="cartTotal" class="font-bold text-xl">Rp 0</span>
+                </div>
+                <button onclick="placeOrder()" class="w-full bg-amber-600 text-white py-3 rounded-lg font-semibold hover:bg-amber-700">
+                    Pesan Sekarang
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let cart = [];
+let tableNumber = {{ table }};
+
+async function loadMenu() {
+    const response = await fetch('/customer/menu');
+    const data = await response.json();
+    renderMenu(data.menus, data.categories);
+}
+
+function renderMenu(menus, categories) {
+    const categoryFilters = document.getElementById('categoryFilters');
+    categoryFilters.innerHTML = '<button onclick="filterCategory(\'all\')" class="category-btn active px-4 py-2 rounded-full bg-amber-600 text-white whitespace-nowrap">Semua</button>';
+    categories.forEach(cat => {
+        categoryFilters.innerHTML += `<button onclick="filterCategory('${cat.id}')" class="category-btn px-4 py-2 rounded-full bg-gray-200 text-gray-700 whitespace-nowrap">${cat.name}</button>`;
+    });
+
+    window.allMenus = menus;
+    filterCategory('all');
+}
+
+function filterCategory(categoryId) {
+    const filtered = categoryId === 'all'
+        ? window.allMenus
+        : window.allMenus.filter(m => m.category_id === parseInt(categoryId));
+
+    const menuGrid = document.getElementById('menuGrid');
+    menuGrid.innerHTML = filtered.map(menu => `
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition">
+            ${menu.image_url ? `<img src="${menu.image_url}" alt="${menu.name}" class="w-full h-32 object-cover">` : '<div class="w-full h-32 bg-gray-200 flex items-center justify-center text-gray-400">No Image</div>'}
+            <div class="p-3">
+                <h3 class="font-semibold text-gray-800 truncate">${menu.name}</h3>
+                <p class="text-xs text-gray-500 truncate">${menu.description || ''}</p>
+                <div class="flex justify-between items-center mt-2">
+                    <span class="font-bold text-amber-700">Rp ${parseInt(menu.price).toLocaleString('id-ID')}</span>
+                    <button onclick="addToCart(${menu.id})" class="bg-amber-600 text-white px-3 py-1 rounded-full text-sm hover:bg-amber-700">+ Tambah</button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+
+    document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.classList.remove('bg-amber-600', 'text-white');
+        btn.classList.add('bg-gray-200', 'text-gray-700');
+    });
+    event.target.classList.remove('bg-gray-200', 'text-gray-700');
+    event.target.classList.add('bg-amber-600', 'text-white');
+}
+
+function addToCart(menuId) {
+    const menu = window.allMenus.find(m => m.id === menuId);
+    const existing = cart.find(item => item.menu_id === menuId);
+
+    if (existing) {
+        existing.quantity++;
+    } else {
+        cart.push({
+            menu_id: menu.id,
+            name: menu.name,
+            price: menu.price,
+            quantity: 1
+        });
+    }
+
+    updateCartUI();
+}
+
+function updateCartUI() {
+    document.getElementById('cartCount').textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+    const cartItems = document.getElementById('cartItems');
+    if (cart.length === 0) {
+        cartItems.innerHTML = '<p class="text-gray-500 text-center">Keranjang kosong</p>';
+    } else {
+        cartItems.innerHTML = cart.map((item, index) => `
+            <div class="flex justify-between items-center py-2 border-b">
+                <div>
+                    <p class="font-medium">${item.name}</p>
+                    <p class="text-sm text-gray-500">Rp ${parseInt(item.price).toLocaleString('id-ID')}</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="updateQuantity(${index}, -1)" class="w-8 h-8 rounded-full bg-gray-200">-</button>
+                    <span>${item.quantity}</span>
+                    <button onclick="updateQuantity(${index}, 1)" class="w-8 h-8 rounded-full bg-gray-200">+</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    document.getElementById('cartTotal').textContent = `Rp ${total.toLocaleString('id-ID')}`;
+}
+
+function updateQuantity(index, delta) {
+    cart[index].quantity += delta;
+    if (cart[index].quantity <= 0) {
+        cart.splice(index, 1);
+    }
+    updateCartUI();
+}
+
+function openCart() {
+    document.getElementById('cartModal').classList.remove('hidden');
+}
+
+function closeCart() {
+    document.getElementById('cartModal').classList.add('hidden');
+}
+
+async function placeOrder() {
+    if (cart.length === 0) {
+        alert('Keranjang kosong!');
+        return;
+    }
+
+    const response = await fetch('/customer/order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            table_number: tableNumber,
+            items: cart.map(item => ({
+                menu_id: item.menu_id,
+                quantity: item.quantity
+            }))
+        })
+    });
+
+    if (response.ok) {
+        const data = await response.json();
+        cart = [];
+        updateCartUI();
+        closeCart();
+        alert('Pesanan berhasil! Silakan tunggu di meja Anda.');
+    } else {
+        alert('Gagal membuat pesanan');
+    }
+}
+
+loadMenu();
+</script>
+{% endblock %}
