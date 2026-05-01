@@ -56,10 +56,17 @@ async def orders_page(
         "orders": orders
     })
 
+from pydantic import BaseModel
+
+
+class OrderStatusUpdate(BaseModel):
+    status: OrderStatus
+
+
 @router.put("/orders/{order_id}/status")
 async def update_order_status(
     order_id: int,
-    status: OrderStatus,
+    update_data: OrderStatusUpdate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -67,10 +74,10 @@ async def update_order_status(
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
 
-    order.status = status
+    order.status = update_data.status
     db.commit()
 
-    return {"success": True, "order_id": order_id, "status": status}
+    return {"success": True, "order_id": order_id, "status": update_data.status.value}
 
 @router.get("/menus", response_class=HTMLResponse)
 async def menus_page(

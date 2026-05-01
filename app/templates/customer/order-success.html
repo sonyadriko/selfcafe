@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}Pesanan Berhasil - Sowan Kopi{% endblock %}
+
+{% block extra_head %}
+<style>
+.success-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-canvas-cream);
+    padding: 20px;
+}
+
+.success-card {
+    background: var(--color-white);
+    border-radius: var(--radius-xl);
+    padding: 40px;
+    text-align: center;
+    max-width: 400px;
+    width: 100%;
+    box-shadow: var(--shadow-card);
+    animation: modalPop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes modalPop {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.success-icon-wrapper {
+    width: 80px;
+    height: 80px;
+    background: rgba(5, 150, 105, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+}
+
+.success-icon {
+    font-size: 40px;
+}
+
+.success-title {
+    font-size: 24px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    color: var(--color-ink-black);
+    margin-bottom: 12px;
+}
+
+.success-message {
+    font-size: 15px;
+    color: var(--color-slate-gray);
+    line-height: 1.5;
+    margin-bottom: 32px;
+}
+
+.qr-section {
+    background: var(--color-lifted-cream);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    margin-bottom: 24px;
+}
+
+.qr-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-slate-gray);
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.qr-code {
+    width: 200px;
+    height: 200px;
+    margin: 0 auto;
+    background: var(--color-white);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.qr-code img {
+    width: 100%;
+    height: 100%;
+    border-radius: var(--radius-md);
+}
+
+.qr-hint {
+    font-size: 13px;
+    color: var(--color-slate-gray);
+    margin-top: 12px;
+}
+
+.token-display {
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+    font-size: 12px;
+    color: var(--color-slate-gray);
+    background: var(--color-white);
+    padding: 8px 12px;
+    border-radius: var(--radius-md);
+    margin-top: 12px;
+    word-break: break-all;
+}
+
+.actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.btn-primary {
+    width: 100%;
+    padding: 14px 24px;
+    background: var(--color-ink-black);
+    color: var(--color-white);
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+    background: #2a2a2a;
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    width: 100%;
+    padding: 14px 24px;
+    background: transparent;
+    color: var(--color-ink-black);
+    border: 1.5px solid rgba(20, 20, 19, 0.2);
+    border-radius: var(--radius-md);
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+    background: var(--color-lifted-cream);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="success-page">
+    <div class="success-card">
+        <div class="success-icon-wrapper">
+            <span class="success-icon">✓</span>
+        </div>
+
+        <h1 class="success-title">Pesanan Berhasil!</h1>
+
+        <p class="success-message">
+            Pesanan Anda telah dibuat. Tunjukkan QR code ini ke kasir untuk pembayaran.
+        </p>
+
+        <div class="qr-section">
+            <p class="qr-title">QR Code Pesanan</p>
+            <div class="qr-code">
+                <img src="/customer/qr/{{ tracking_token }}" alt="QR Code Pesanan" id="qrImage">
+            </div>
+            <p class="qr-hint">Scan QR code untuk melacak status pesanan</p>
+            <p class="token-display">Token: {{ tracking_token }}</p>
+        </div>
+
+        <div class="actions">
+            <button class="btn-primary" onclick="trackOrder()">Lacak Pesanan</button>
+            <button class="btn-secondary" onclick="newOrder()">Pesanan Baru</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function trackOrder() {
+    window.location.href = '/customer/track/{{ tracking_token }}';
+}
+
+function newOrder() {
+    window.location.href = '/customer';
+}
+</script>
+{% endblock %}

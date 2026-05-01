@@ -34,8 +34,39 @@ class OrderResponse(OrderBase):
     id: int
     total_amount: Decimal
     status: OrderStatus
+    tracking_token: str
     created_at: datetime
     items: List[OrderItemResponse] = []
+
+    class Config:
+        from_attributes = True
+
+
+class OrderTrackingResponse(BaseModel):
+    """Response for order tracking by token."""
+    id: int
+    table_number: int
+    total_amount: Decimal
+    status: OrderStatus
+    created_at: datetime
+    items: List[OrderItemResponse]
+
+    class Config:
+        from_attributes = True
+
+
+class CashierScanRequest(BaseModel):
+    """Request for cashier to scan/retrieve order."""
+    tracking_token: str
+
+
+class CashierScanResponse(BaseModel):
+    """Response for cashier scan with order details."""
+    order_id: int
+    table_number: int
+    total_amount: Decimal
+    status: OrderStatus
+    items: List[OrderItemResponse]
 
     class Config:
         from_attributes = True

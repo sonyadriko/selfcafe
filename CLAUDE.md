@@ -56,6 +56,7 @@ routes/ (FastAPI routers) → services/ (business logic) → models/ (SQLAlchemy
 | `app/database.py` | SQLAlchemy engine, SessionLocal, get_db() dependency |
 | `app/dependencies.py` | Auth: get_current_user (JWT), require_role() helper |
 | `app/services/auth_service.py` | Password hashing (bcrypt), JWT token creation/verification |
+| `app/services/upload.py` | Image upload handling (menu item photos) |
 
 ### Routes Organization
 
@@ -124,6 +125,10 @@ ACCESS_TOKEN_EXPIRE_MINUTES=60
 APP_NAME=SelfCafe Ordering
 DEBUG=True
 ```
+
+## Testing
+
+No test suite present. When adding tests, place in `tests/` directory.
 
 ## Project Context
 

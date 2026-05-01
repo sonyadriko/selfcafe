@@ -3,8 +3,11 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.menu import Menu
 from app.schemas.menu import MenuCreate, MenuUpdate
+from app.schemas.order import OrderTrackingResponse, OrderItemResponse
 from app.dependencies import get_current_user
 from app.models.user import User
+from app.models.order import Order
+from app.services.tracking import get_order_by_token
 from app.services.upload import upload_service
 
 router = APIRouter()
@@ -93,3 +96,34 @@ async def upload_image(
     """
     image_url = await upload_service.upload_image(file)
     return {"url": image_url}
+
+
+@router.get("/track/{tracking_token}")
+async def track_order(tracking_token: str, db: Session = Depends(get_db)):
+    """API endpoint to get order status by tracking token (public, no auth required)."""
+    order = get_order_by_token(db, tracking_token)
+
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    items = [
+        OrderItemResponse(
+            id=item.id,
+            menu_id=item.menu_id,
+            quantity=item.quantity,
+            notes=item.notes,
+            subtotal=item.subtotal,
+            menu_name=item.menu.name if item.menu else None,
+            menu_price=item.menu.price if item.menu else None
+        )
+        for item in order.items
+    ]
+
+    return OrderTrackingResponse(
+        id=order.id,
+        table_number=order.table_number,
+        total_amount=order.total_amount,
+        status=order.status,
+        created_at=order.created_at,
+        items=items
+    )

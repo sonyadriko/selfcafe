@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.database import Base
 import enum
+import uuid
 
 class OrderStatus(str, enum.Enum):
     PENDING = "pending"
@@ -18,6 +19,7 @@ class Order(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     total_amount = Column(Numeric(10, 2), default=0)
     status = Column(Enum(OrderStatus), default=OrderStatus.PENDING, nullable=False)
+    tracking_token = Column(String(36), unique=True, nullable=False, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
@@ -34,3 +36,4 @@ class OrderItem(Base):
     notes = Column(String(255))
 
     order = relationship("Order", back_populates="items")
+    menu = relationship("Menu", backref="order_items")

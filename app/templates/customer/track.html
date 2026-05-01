@@ -1,0 +1,507 @@
+{% extends "base.html" %}
+
+{% block title %}Lacak Pesanan - Sowan Kopi{% endblock %}
+
+{% block extra_head %}
+<style>
+.track-page {
+    min-height: 100vh;
+    background: var(--color-canvas-cream);
+    padding: 20px;
+}
+
+.track-header {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.track-title {
+    font-size: 28px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    color: var(--color-ink-black);
+    margin-bottom: 8px;
+}
+
+.track-subtitle {
+    font-size: 15px;
+    color: var(--color-slate-gray);
+}
+
+.track-content {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.status-card {
+    background: var(--color-white);
+    border-radius: var(--radius-xl);
+    padding: 32px;
+    box-shadow: var(--shadow-card);
+    margin-bottom: 20px;
+    display: none;
+}
+
+.status-card.show {
+    display: block;
+    animation: fadeInUp 0.4s ease;
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.status-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.order-id {
+    font-size: 14px;
+    color: var(--color-slate-gray);
+    font-weight: 500;
+}
+
+.order-time {
+    font-size: 12px;
+    color: var(--color-slate-gray);
+    margin-top: 4px;
+}
+
+.table-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: var(--color-lifted-cream);
+    border-radius: var(--radius-pill);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-ink-black);
+}
+
+.status-indicator {
+    text-align: center;
+    padding: 24px;
+}
+
+.status-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    font-size: 28px;
+}
+
+.status-icon.pending {
+    background: rgba(217, 119, 6, 0.1);
+}
+
+.status-icon.paid {
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.status-icon.completed {
+    background: rgba(5, 150, 105, 0.1);
+}
+
+.status-icon.cancelled {
+    background: rgba(220, 38, 38, 0.1);
+}
+
+.status-label {
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--color-ink-black);
+    margin-bottom: 8px;
+}
+
+.status-text {
+    font-size: 14px;
+    color: var(--color-slate-gray);
+}
+
+.progress-bar {
+    display: flex;
+    justify-content: space-between;
+    margin: 24px 0;
+    position: relative;
+}
+
+.progress-bar::before {
+    content: '';
+    position: absolute;
+    top: 16px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: rgba(0, 0, 0, 0.1);
+    z-index: 0;
+}
+
+.progress-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    z-index: 1;
+}
+
+.progress-dot {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--color-white);
+    border: 2px solid rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+.progress-step.active .progress-dot {
+    background: var(--color-coffee-medium);
+    border-color: var(--color-coffee-medium);
+    color: var(--color-white);
+}
+
+.progress-step.completed .progress-dot {
+    background: #059669;
+    border-color: #059669;
+    color: var(--color-white);
+}
+
+.progress-label {
+    font-size: 11px;
+    color: var(--color-slate-gray);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.progress-step.active .progress-label,
+.progress-step.completed .progress-label {
+    color: var(--color-ink-black);
+}
+
+.order-details {
+    margin-top: 24px;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    font-size: 14px;
+    color: var(--color-slate-gray);
+}
+
+.detail-value {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-ink-black);
+}
+
+.detail-total {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+.detail-total .detail-label {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--color-ink-black);
+}
+
+.detail-total .detail-value {
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--color-coffee-dark);
+}
+
+.items-list {
+    margin-top: 20px;
+}
+
+.item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.item-info {
+    flex: 1;
+}
+
+.item-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-ink-black);
+}
+
+.item-qty {
+    font-size: 13px;
+    color: var(--color-slate-gray);
+}
+
+.item-price {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-ink-black);
+}
+
+.loading-spinner {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(0, 0, 0, 0.1);
+    border-top-color: var(--color-coffee-medium);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.error-card {
+    background: var(--color-white);
+    border-radius: var(--radius-xl);
+    padding: 40px;
+    text-align: center;
+    box-shadow: var(--shadow-card);
+}
+
+.error-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.error-title {
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--color-ink-black);
+    margin-bottom: 8px;
+}
+
+.error-text {
+    font-size: 14px;
+    color: var(--color-slate-gray);
+    margin-bottom: 24px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="track-page">
+    <div class="track-header">
+        <h1 class="track-title">Lacak Pesanan</h1>
+        <p class="track-subtitle">Masukkan token QR code untuk melacak status pesanan Anda</p>
+    </div>
+
+    <div class="track-content">
+        <div id="loadingState" class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Memuat pesanan...</p>
+        </div>
+
+        <div id="errorState" class="error-card" style="display: none;">
+            <div class="error-icon">❌</div>
+            <h2 class="error-title">Pesanan Tidak Ditemukan</h2>
+            <p class="error-text">Token tracking tidak valid atau pesanan telah kadaluarsa.</p>
+            <button class="btn-primary" onclick="window.location.href='/customer'">Kembali ke Menu</button>
+        </div>
+
+        <div id="statusCard" class="status-card">
+            <div class="status-header">
+                <div>
+                    <span class="order-id">Order #<span id="orderId">-</span></span>
+                    <div class="order-time" id="orderTime">-</div>
+                </div>
+                <div class="table-badge">
+                    <span>🪑</span>
+                    <span>Meja <span id="tableNumber">-</span></span>
+                </div>
+            </div>
+
+            <div class="status-indicator">
+                <div class="status-icon" id="statusIcon">
+                    <span id="statusIconText">⏳</span>
+                </div>
+                <h2 class="status-label" id="statusLabel">Pending</h2>
+                <p class="status-text" id="statusText">Menunggu pembayaran</p>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-step" id="stepPending">
+                    <div class="progress-dot">1</div>
+                    <span class="progress-label">Pending</span>
+                </div>
+                <div class="progress-step" id="stepPaid">
+                    <div class="progress-dot">2</div>
+                    <span class="progress-label">Dibayar</span>
+                </div>
+                <div class="progress-step" id="stepCompleted">
+                    <div class="progress-dot">3</div>
+                    <span class="progress-label">Selesai</span>
+                </div>
+            </div>
+
+            <div class="order-details">
+                <h3>Detail Pesanan</h3>
+                <div class="items-list" id="itemsList">
+                    <!-- Items will be populated here -->
+                </div>
+
+                <div class="detail-row detail-total">
+                    <span class="detail-label">Total</span>
+                    <span class="detail-value" id="totalAmount">Rp 0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const TRACKING_TOKEN = '{{ tracking_token }}';
+
+async function loadOrder() {
+    try {
+        const response = await fetch(`/api/track/${TRACKING_TOKEN}`);
+
+        if (!response.ok) {
+            showError();
+            return;
+        }
+
+        const order = await response.json();
+        displayOrder(order);
+
+        // Auto-refresh every 10 seconds
+        setInterval(() => loadOrder(), 10000);
+    } catch (err) {
+        console.error('Failed to load order:', err);
+        showError();
+    }
+}
+
+function displayOrder(order) {
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('errorState').style.display = 'none';
+    document.getElementById('statusCard').classList.add('show');
+
+    // Order info
+    document.getElementById('orderId').textContent = order.id;
+    document.getElementById('tableNumber').textContent = order.table_number;
+
+    // Format order time
+    const orderDate = new Date(order.created_at);
+    const formattedTime = orderDate.toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+    document.getElementById('orderTime').textContent = formattedTime;
+
+    // Status
+    updateStatus(order.status);
+
+    // Items
+    const itemsList = document.getElementById('itemsList');
+    itemsList.innerHTML = order.items.map(item => `
+        <div class="item-row">
+            <div class="item-info">
+                <div class="item-name">${item.menu_name || 'Menu Item'}</div>
+                <div class="item-qty">${item.quantity}x</div>
+            </div>
+            <div class="item-price">Rp ${parseInt(item.subtotal).toLocaleString('id-ID')}</div>
+        </div>
+    `).join('');
+
+    // Total
+    document.getElementById('totalAmount').textContent = `Rp ${parseInt(order.total_amount).toLocaleString('id-ID')}`;
+}
+
+function updateStatus(status) {
+    const statusIcon = document.getElementById('statusIcon');
+    const statusLabel = document.getElementById('statusLabel');
+    const statusText = document.getElementById('statusText');
+    const statusIconText = document.getElementById('statusIconText');
+
+    // Reset steps
+    document.getElementById('stepPending').className = 'progress-step';
+    document.getElementById('stepPaid').className = 'progress-step';
+    document.getElementById('stepCompleted').className = 'progress-step';
+
+    switch (status) {
+        case 'pending':
+            statusIcon.className = 'status-icon pending';
+            statusIconText.textContent = '⏳';
+            statusLabel.textContent = 'Menunggu Pembayaran';
+            statusText.textContent = 'Silakan tunjukkan QR code ke kasir';
+            document.getElementById('stepPending').className = 'progress-step active';
+            break;
+        case 'paid':
+            statusIcon.className = 'status-icon paid';
+            statusIconText.textContent = '💳';
+            statusLabel.textContent = 'Sudah Dibayar';
+            statusText.textContent = 'Pesanan sedang diproses';
+            document.getElementById('stepPending').className = 'progress-step completed';
+            document.getElementById('stepPaid').className = 'progress-step active';
+            break;
+        case 'completed':
+            statusIcon.className = 'status-icon completed';
+            statusIconText.textContent = '✓';
+            statusLabel.textContent = 'Selesai';
+            statusText.textContent = 'Selamat menikmati pesanan Anda!';
+            document.getElementById('stepPending').className = 'progress-step completed';
+            document.getElementById('stepPaid').className = 'progress-step completed';
+            document.getElementById('stepCompleted').className = 'progress-step completed';
+            break;
+        case 'cancelled':
+            statusIcon.className = 'status-icon cancelled';
+            statusIconText.textContent = '✕';
+            statusLabel.textContent = 'Dibatalkan';
+            statusText.textContent = 'Pesanan telah dibatalkan';
+            break;
+    }
+}
+
+function showError() {
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('statusCard').classList.remove('show');
+    document.getElementById('errorState').style.display = 'block';
+}
+
+// Initial load
+loadOrder();
+</script>
+{% endblock %}
