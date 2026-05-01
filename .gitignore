@@ -74,3 +74,7 @@ mysql-data/
 
 # Session
 *.session
+
+# Uploads
+app/static/uploads/*
+!app/static/uploads/.gitkeep

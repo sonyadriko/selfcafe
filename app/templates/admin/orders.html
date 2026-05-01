@@ -2,121 +2,539 @@
 
 {% block title %}Pesanan - Admin{% endblock %}
 
+{% block extra_head %}
+<style>
+/* ===== Orders Page Styles ===== */
+.orders-container {
+    min-height: 100vh;
+    background: var(--color-canvas-cream);
+}
+
+/* Main Content */
+.main-content {
+    margin-left: 280px;
+    padding: 48px 64px;
+    min-height: 100vh;
+}
+
+@media (max-width: 1200px) {
+    .main-content { padding: 32px 40px; }
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        margin-left: 0;
+        padding: 24px;
+        padding-top: 80px;
+    }
+}
+
+/* Page Header */
+.page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 40px;
+    animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.page-title-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.page-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-coffee-medium);
+}
+
+.page-eyebrow-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--color-light-signal-orange);
+    border-radius: 50%;
+}
+
+.page-title {
+    font-size: 48px;
+    font-weight: 500;
+    letter-spacing: -0.04em;
+    line-height: 1.1;
+    color: var(--color-ink-black);
+}
+
+.page-subtitle {
+    font-size: 16px;
+    color: var(--color-slate-gray);
+    font-weight: 450;
+}
+
+/* Filter Tabs */
+.filter-tabs {
+    display: flex;
+    gap: 8px;
+    background: var(--color-white);
+    padding: 6px;
+    border-radius: var(--radius-pill);
+    box-shadow: var(--shadow-nav);
+    animation: fadeInUp 0.5s ease-out 0.1s backwards;
+}
+
+.filter-tab {
+    padding: 10px 24px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-slate-gray);
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.filter-tab:hover {
+    color: var(--color-ink-black);
+    background: var(--color-lifted-cream);
+}
+
+.filter-tab.active {
+    background: var(--color-ink-black);
+    color: var(--color-white);
+}
+
+.filter-tab .count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    margin-left: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: var(--radius-pill);
+}
+
+.filter-tab.active .count {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Orders List */
+.orders-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    animation: fadeInUp 0.5s ease-out 0.2s backwards;
+}
+
+.order-card {
+    background: var(--color-white);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.order-card:hover {
+    box-shadow: 0 32px 64px 0 rgba(0, 0, 0, 0.12);
+}
+
+.order-card-header {
+    display: flex;
+    align-items: center;
+    padding: 20px 24px;
+    gap: 20px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.order-card-id {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 100px;
+}
+
+.order-card-number {
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-ink-black);
+}
+
+.order-card-time {
+    font-size: 13px;
+    color: var(--color-slate-gray);
+}
+
+.order-card-table {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    background: var(--color-lifted-cream);
+    border-radius: var(--radius-md);
+    min-width: 120px;
+}
+
+.order-card-table-icon { font-size: 16px; }
+.order-card-table-number { font-size: 15px; font-weight: 500; }
+
+.order-card-items {
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.order-item-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--color-lifted-cream);
+    border-radius: var(--radius-md);
+    font-size: 14px;
+}
+
+.order-item-quantity { font-weight: 600; color: var(--color-coffee-medium); }
+.order-item-name { color: var(--color-ink-black); }
+
+.order-card-total { text-align: right; min-width: 120px; }
+.order-card-total-label { font-size: 12px; color: var(--color-slate-gray); text-transform: uppercase; letter-spacing: 0.04em; }
+.order-card-total-amount { font-size: 20px; font-weight: 500; color: var(--color-ink-black); }
+
+.order-card-status { min-width: 140px; }
+
+.order-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: var(--radius-pill);
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.order-status-badge.pending { background: rgba(254, 243, 199, 0.7); color: #92400E; }
+.order-status-badge.paid { background: rgba(209, 250, 229, 0.7); color: #065F46; }
+.order-status-badge.completed { background: rgba(219, 234, 254, 0.7); color: #1E40AF; }
+.order-status-badge.cancelled { background: rgba(254, 226, 226, 0.7); color: #991B1B; }
+
+.order-status-badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: statusPulse 2s ease-in-out infinite;
+}
+
+@keyframes statusPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+.order-card-actions { display: flex; gap: 8px; }
+
+.order-action-btn {
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1.5px solid rgba(20, 20, 19, 0.15);
+    background: var(--color-white);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.order-action-btn:hover { border-color: var(--color-ink-black); background: var(--color-lifted-cream); }
+.order-action-btn.primary { background: var(--color-ink-black); border-color: var(--color-ink-black); color: var(--color-white); }
+.order-action-btn.primary:hover { background: #2a2a2a; }
+.order-action-btn.success { background: #059669; border-color: #059669; color: var(--color-white); }
+.order-action-btn.success:hover { background: #047857; }
+
+.order-card-details {
+    display: none;
+    padding: 20px 24px;
+    background: var(--color-lifted-cream);
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.order-card-details.show { display: block; }
+
+.order-details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.order-detail-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: var(--color-white);
+    border-radius: var(--radius-md);
+    font-size: 14px;
+}
+
+.order-detail-name { color: var(--color-slate-gray); }
+.order-detail-qty { font-weight: 600; color: var(--color-ink-black); }
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 80px 40px;
+    background: var(--color-white);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-card);
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.empty-state-icon { font-size: 56px; margin-bottom: 16px; opacity: 0.4; }
+.empty-state-title { font-size: 20px; font-weight: 500; color: var(--color-ink-black); margin-bottom: 8px; }
+.empty-state-text { font-size: 15px; color: var(--color-slate-gray); }
+
+/* Toast */
+.toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    padding: 16px 24px;
+    background: var(--color-ink-black);
+    color: var(--color-white);
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 12px 24px 0 rgba(0, 0, 0, 0.15);
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.success { background: #059669; }
+.toast.error { background: #DC2626; }
+
+/* Responsive */
+@media (max-width: 900px) {
+    .page-header { flex-direction: column; gap: 24px; }
+    .filter-tabs { overflow-x: auto; flex-wrap: nowrap; justify-content: flex-start; }
+    .order-card-header { flex-wrap: wrap; }
+}
+
+@media (max-width: 768px) {
+    .page-title { font-size: 36px; }
+    .order-card-header { padding: 16px; }
+    .order-card-table, .order-card-total, .order-card-status { min-width: auto; flex: 1; }
+    .order-card-actions { width: 100%; justify-content: stretch; }
+    .order-action-btn { flex: 1; }
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="min-h-screen bg-canvas">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-        <div class="mb-8 pb-4" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-            <div class="eyebrow mb-2" style="--color-light-signal-orange: var(--color-coffee-light);">
-                SOWAN KOPI
-            </div>
-            <p class="text-small text-white" style="opacity: 0.7;">Admin Panel</p>
-        </div>
-        <nav>
-            <a href="/admin/dashboard" class="sidebar-link">
-                <span class="text-small">Dashboard</span>
-            </a>
-            <a href="/admin/orders" class="sidebar-link active">
-                <span class="text-small">Pesanan</span>
-            </a>
-            <a href="/admin/menus" class="sidebar-link">
-                <span class="text-small">Menu</span>
-            </a>
-            <div style="margin-top: 48px;"></div>
-            <a href="/auth/logout" class="sidebar-link" style="--color-light-signal-orange: var(--color-signal-orange);">
-                <span class="text-small">Logout</span>
-            </a>
-        </nav>
-    </aside>
+<div class="orders-container">
+    {% include "admin/sidebar.html" %}
 
     <!-- Main Content -->
-    <main style="margin-left: 280px; padding: 48px;">
-        <div class="eyebrow mb-4">
-            <span>PESANAN</span>
-        </div>
-        <h1 class="h1 mb-8">Daftar Pesanan</h1>
+    <main class="main-content">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="page-title-section">
+                <div class="page-eyebrow">
+                    <span class="page-eyebrow-dot"></span>
+                    <span>Orders Management</span>
+                </div>
+                <h1 class="page-title">Daftar Pesanan</h1>
+                <p class="page-subtitle">Kelola dan update status pesanan kedai kopi</p>
+            </div>
 
-        <!-- Filters -->
-        <div class="flex gap-2 mb-8">
-            <button onclick="filterOrders('all')" class="category-pill active">Semua</button>
-            <button onclick="filterOrders('pending')" class="category-pill">Pending</button>
-            <button onclick="filterOrders('paid')" class="category-pill">Paid</button>
-            <button onclick="filterOrders('completed')" class="category-pill">Completed</button>
+            <!-- Filter Tabs -->
+            <div class="filter-tabs" id="filterTabs">
+                <button class="filter-tab active" onclick="filterOrders('all')">
+                    Semua
+                    <span class="count">{{ orders|length }}</span>
+                </button>
+                <button class="filter-tab" onclick="filterOrders('pending')">
+                    Pending
+                    <span class="count">{{ orders|selectattr('status', 'equalto', 'pending')|list|length }}</span>
+                </button>
+                <button class="filter-tab" onclick="filterOrders('paid')">
+                    Dibayar
+                    <span class="count">{{ orders|selectattr('status', 'equalto', 'paid')|list|length }}</span>
+                </button>
+                <button class="filter-tab" onclick="filterOrders('completed')">
+                    Selesai
+                    <span class="count">{{ orders|selectattr('status', 'equalto', 'completed')|list|length }}</span>
+                </button>
+            </div>
         </div>
 
-        <!-- Orders Table -->
-        <div class="card">
-            <table class="table" id="ordersTable">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Meja</th>
-                        <th>Items</th>
-                        <th>Total</th>
-                        <th>Status</th>
-                        <th>Waktu</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for order in orders %}
-                    <tr data-status="{{ order.status }}">
-                        <td class="text-small font-semibold">#{{ order.id }}</td>
-                        <td class="text-small">{{ order.table_number }}</td>
-                        <td class="text-small">
-                            {% for item in order.items %}
-                            <div style="margin-bottom: 4px;">{{ item.quantity }}x {{ item.menu.name if item.menu else 'N/A' }}</div>
+        <!-- Orders List -->
+        <div class="orders-list" id="ordersList">
+            {% if orders %}
+                {% for order in orders %}
+                <div class="order-card" data-status="{{ order.status.value }}" id="order-{{ order.id }}">
+                    <div class="order-card-header">
+                        <div class="order-card-id">
+                            <span class="order-card-number">#{{ order.id }}</span>
+                            <span class="order-card-time">{{ order.created_at.strftime('%H:%M') }}</span>
+                        </div>
+
+                        <div class="order-card-table">
+                            <span class="order-card-table-icon">🪑</span>
+                            <span class="order-card-table-number">Meja {{ order.table_number }}</span>
+                        </div>
+
+                        <div class="order-card-items">
+                            {% for item in order.items[:3] %}
+                            <span class="order-item-tag">
+                                <span class="order-item-quantity">{{ item.quantity }}x</span>
+                                <span class="order-item-name">{{ item.menu.name if item.menu else 'N/A' }}</span>
+                            </span>
                             {% endfor %}
-                        </td>
-                        <td class="text-small font-semibold">Rp {{ order.total_amount|int }}</td>
-                        <td>
-                            <select onchange="updateStatus({{ order.id }}, this.value)"
-                                    class="input" style="padding: 6px 16px; font-size: 14px;">
-                                <option value="pending" {% if order.status == 'pending' %}selected{% endif %}>Pending</option>
-                                <option value="paid" {% if order.status == 'paid' %}selected{% endif %}>Paid</option>
-                                <option value="completed" {% if order.status == 'completed' %}selected{% endif %}>Completed</option>
-                            </select>
-                        </td>
-                        <td class="text-small text-muted">{{ order.created_at.strftime('%H:%M') }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                            {% if order.items|length > 3 %}
+                            <span class="order-item-tag" style="background: rgba(0,0,0,0.05);">
+                                +{{ order.items|length - 3 }} lainnya
+                            </span>
+                            {% endif %}
+                        </div>
+
+                        <div class="order-card-total">
+                            <div class="order-card-total-label">Total</div>
+                            <div class="order-card-total-amount">Rp {{ "{:,}".format(order.total_amount|int) }}</div>
+                        </div>
+
+                        <div class="order-card-status">
+                            <span class="order-status-badge {{ order.status.value }}">
+                                <span class="order-status-badge-dot"></span>
+                                {% if order.status.value == 'pending' %}Menunggu{% elif order.status.value == 'paid' %}Dibayar{% elif order.status.value == 'completed' %}Selesai{% else %}Batal{% endif %}
+                            </span>
+                        </div>
+
+                        <div class="order-card-actions">
+                            {% if order.status.value == 'pending' %}
+                            <button class="order-action-btn success" onclick="updateStatus({{ order.id }}, 'paid')">
+                                Konfirmasi
+                            </button>
+                            {% elif order.status.value == 'paid' %}
+                            <button class="order-action-btn primary" onclick="updateStatus({{ order.id }}, 'completed')">
+                                Selesai
+                            </button>
+                            {% endif %}
+                            <button class="order-action-btn" onclick="toggleDetails({{ order.id }})">
+                                {{ order.items|length }} item
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Expanded Details -->
+                    <div class="order-card-details" id="details-{{ order.id }}">
+                        <div class="order-details-grid">
+                            {% for item in order.items %}
+                            <div class="order-detail-item">
+                                <span class="order-detail-name">{{ item.menu.name if item.menu else 'N/A' }}</span>
+                                <span class="order-detail-qty">{{ item.quantity }}x</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">📭</div>
+                <h3 class="empty-state-title">Belum Ada Pesanan</h3>
+                <p class="empty-state-text">Pesanan dari pelanggan akan muncul di sini</p>
+            </div>
+            {% endif %}
         </div>
     </main>
 </div>
 
-<script>
-async function updateStatus(orderId, status) {
-    const response = await fetch(`/admin/orders/${orderId}/status`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: status })
-    });
+<!-- Toast Notification -->
+<div class="toast" id="toast"></div>
 
-    if (response.ok) {
-        location.reload();
-    } else {
-        alert('Gagal update status');
-    }
-}
+<script>
+let currentFilter = 'all';
 
 function filterOrders(status) {
-    const rows = document.querySelectorAll('#ordersTable tbody tr');
-    rows.forEach(row => {
-        if (status === 'all' || row.dataset.status === status) {
-            row.style.display = '';
+    currentFilter = status;
+    const cards = document.querySelectorAll('.order-card');
+    let visibleCount = 0;
+
+    cards.forEach(card => {
+        if (status === 'all' || card.dataset.status === status) {
+            card.style.display = '';
+            visibleCount++;
         } else {
-            row.style.display = 'none';
+            card.style.display = 'none';
         }
     });
 
-    document.querySelectorAll('.category-pill').forEach(btn => {
-        btn.classList.remove('active');
-        btn.style.backgroundColor = '';
-        btn.style.color = '';
-        btn.style.borderColor = '';
+    // Update active tab
+    document.querySelectorAll('.filter-tab').forEach(tab => {
+        tab.classList.remove('active');
     });
-    event.target.classList.add('active');
+    event.target.closest('.filter-tab').classList.add('active');
 }
+
+async function updateStatus(orderId, status) {
+    const card = document.getElementById(`order-${orderId}`);
+    card.style.opacity = '0.5';
+    card.style.pointerEvents = 'none';
+
+    try {
+        const response = await fetch(`/admin/orders/${orderId}/status`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: status })
+        });
+
+        if (response.ok) {
+            showToast('Status berhasil diupdate', 'success');
+            setTimeout(() => location.reload(), 500);
+        } else {
+            throw new Error('Gagal update status');
+        }
+    } catch (error) {
+        showToast(error.message, 'error');
+        card.style.opacity = '';
+        card.style.pointerEvents = '';
+    }
+}
+
+function toggleDetails(orderId) {
+    document.getElementById(`details-${orderId}`).classList.toggle('show');
+}
+
+function showToast(message, type = '') {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.className = 'toast ' + type;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        document.querySelectorAll('.order-card-details').forEach(details => {
+            details.classList.remove('show');
+        });
+    }
+});
 </script>
 {% endblock %}

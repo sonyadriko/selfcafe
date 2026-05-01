@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+**Python Version:** 3.12 (see Dockerfile)
+
 ## Project Overview
 
 SelfCafe Ordering System is a web-based self-ordering system for coffee shops (Sowan Kopi). Built with FastAPI + MySQL + Jinja2, following a Waterfall development model as documented in the thesis.
@@ -34,13 +36,6 @@ docker-compose up --build        # Build and start all services
 docker-compose exec db mysql -u root -p  # Access MySQL shell
 docker-compose exec app alembic upgrade head  # Run migrations in container
 docker-compose exec app python scripts/seed_data.py  # Seed in container
-```
-
-### Testing (if pytest is configured)
-```bash
-pytest                            # Run all tests
-pytest tests/test_customer.py    # Run specific test file
-pytest -v                         # Verbose output
 ```
 
 ## Architecture

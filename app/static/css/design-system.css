@@ -327,27 +327,81 @@ h4, .h4 {
     top: 0;
     height: 100vh;
     width: 280px;
-    background-color: var(--color-ink-black);
+    background: linear-gradient(180deg, var(--color-ink-black) 0%, #1a1a1a 100%);
     color: var(--color-white);
     padding: var(--space-32) var(--space-24);
+    z-index: 100;
+}
+
+.sidebar-brand {
+    margin-bottom: 48px;
+}
+
+.sidebar-brand-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--color-light-signal-orange);
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 10px;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.1); }
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
 .sidebar-link {
-    display: block;
-    padding: 12px 16px;
-    color: var(--color-white);
+    display: flex;
+    align-items: center;
+    padding: 14px 18px;
+    color: rgba(255, 255, 255, 0.7);
     text-decoration: none;
     border-radius: var(--radius-md);
-    margin-bottom: var(--space-8);
-    transition: background-color 0.2s ease;
+    font-size: 15px;
+    font-weight: 450;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.sidebar-link::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 3px;
+    height: 100%;
+    background: var(--color-light-signal-orange);
+    transform: scaleY(0);
+    transition: transform 0.2s ease;
 }
 
 .sidebar-link:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--color-white);
+    background: rgba(255, 255, 255, 0.08);
 }
 
 .sidebar-link.active {
-    background-color: rgba(255, 255, 255, 0.15);
+    color: var(--color-white);
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.sidebar-link.active::before {
+    transform: scaleY(1);
+}
+
+.sidebar-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 24px 0;
 }
 
 /* ===== 11. Tables ===== */

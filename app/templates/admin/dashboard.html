@@ -2,71 +2,501 @@
 
 {% block title %}Dashboard - Admin{% endblock %}
 
+{% block extra_head %}
+<style>
+/* ===== Dashboard Specific Styles ===== */
+.dashboard-container {
+    min-height: 100vh;
+    background: var(--color-canvas-cream);
+}
+
+/* Main Content Area */
+.main-content {
+    margin-left: 280px;
+    padding: 48px 64px;
+    min-height: 100vh;
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        margin-left: 0;
+        padding: 24px;
+        padding-top: 80px;
+    }
+}
+
+/* Welcome Header */
+.welcome-header {
+    margin-bottom: 48px;
+    animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.welcome-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-coffee-medium);
+    margin-bottom: 12px;
+}
+
+.welcome-eyebrow-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--color-light-signal-orange);
+    border-radius: 50%;
+}
+
+.welcome-title {
+    font-size: 52px;
+    font-weight: 500;
+    letter-spacing: -0.04em;
+    line-height: 1.1;
+    color: var(--color-ink-black);
+}
+
+.welcome-subtitle {
+    font-size: 17px;
+    color: var(--color-slate-gray);
+    margin-top: 12px;
+    font-weight: 450;
+}
+
+/* Enhanced Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    margin-bottom: 48px;
+}
+
+.stats-card {
+    position: relative;
+    background: var(--color-white);
+    border-radius: var(--radius-xl);
+    padding: 28px 24px;
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: fadeInUp 0.6s ease-out backwards;
+}
+
+.stats-card:nth-child(1) { animation-delay: 0.1s; }
+.stats-card:nth-child(2) { animation-delay: 0.15s; }
+.stats-card:nth-child(3) { animation-delay: 0.2s; }
+.stats-card:nth-child(4) { animation-delay: 0.25s; }
+
+.stats-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 32px 64px 0 rgba(0, 0, 0, 0.12);
+}
+
+.stats-card-bg {
+    position: absolute;
+    right: -20px;
+    top: -20px;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    opacity: 0.05;
+}
+
+.stats-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.stats-card-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.stats-card-icon.pending { background: rgba(254, 243, 199, 0.5); }
+.stats-card-icon.today { background: rgba(209, 250, 229, 0.5); }
+.stats-card-icon.menus { background: rgba(219, 234, 254, 0.5); }
+.stats-card-icon.revenue { background: rgba(167, 139, 250, 0.2); }
+
+.stats-card-trend {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: var(--radius-pill);
+    background: rgba(0, 0, 0, 0.04);
+}
+
+.stats-card-trend.up { color: #059669; }
+.stats-card-trend.neutral { color: var(--color-slate-gray); }
+
+.stats-card-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-slate-gray);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.stats-card-value {
+    font-size: 38px;
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    margin-top: 8px;
+}
+
+.stats-card-value.pending { color: #D97706; }
+.stats-card-value.today { color: var(--color-coffee-dark); }
+.stats-card-value.menus { color: var(--color-coffee-medium); }
+.stats-card-value.revenue { color: #7C3AED; }
+
+/* Recent Orders Section */
+.recent-orders-section {
+    animation: fadeInUp 0.6s ease-out 0.3s backwards;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.section-title {
+    font-size: 24px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+}
+
+.section-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.btn-view-all {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-ink-black);
+    background: var(--color-white);
+    border: 1.5px solid rgba(20, 20, 19, 0.15);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.btn-view-all:hover {
+    border-color: var(--color-ink-black);
+    background: var(--color-lifted-cream);
+}
+
+/* Enhanced Table */
+.orders-table-container {
+    background: var(--color-white);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+}
+
+.orders-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.orders-table thead {
+    background: var(--color-lifted-cream);
+}
+
+.orders-table th {
+    padding: 16px 20px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-slate-gray);
+    border-bottom: none;
+}
+
+.orders-table td {
+    padding: 18px 20px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    font-size: 15px;
+    font-weight: 450;
+}
+
+.orders-table tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+.orders-table tbody tr:hover {
+    background: rgba(0, 0, 0, 0.02);
+}
+
+.orders-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.order-id {
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+    font-size: 13px;
+    color: var(--color-slate-gray);
+}
+
+.order-table-number {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+}
+
+.order-table-icon {
+    width: 28px;
+    height: 28px;
+    background: var(--color-lifted-cream);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+}
+
+.order-total {
+    font-weight: 500;
+    font-size: 15px;
+}
+
+.order-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: var(--radius-pill);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.order-status.pending {
+    background: rgba(254, 243, 199, 0.6);
+    color: #92400E;
+}
+
+.order-status.paid {
+    background: rgba(209, 250, 229, 0.6);
+    color: #065F46;
+}
+
+.order-status.completed {
+    background: rgba(219, 234, 254, 0.6);
+    color: #1E40AF;
+}
+
+.order-status.cancelled {
+    background: rgba(254, 226, 226, 0.6);
+    color: #991B1B;
+}
+
+.order-status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.order-time {
+    color: var(--color-slate-gray);
+    font-size: 14px;
+}
+
+/* Empty State */
+.empty-state {
+    padding: 64px 32px;
+    text-align: center;
+}
+
+.empty-state-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.3;
+}
+
+.empty-state-text {
+    color: var(--color-slate-gray);
+    font-size: 15px;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .main-content {
+        padding: 32px 40px;
+    }
+}
+
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .welcome-title {
+        font-size: 36px;
+    }
+
+    .orders-table-container {
+        overflow-x: auto;
+    }
+
+    .orders-table {
+        min-width: 600px;
+    }
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="min-h-screen bg-canvas">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-        <div class="mb-8 pb-4" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-            <div class="eyebrow mb-2" style="--color-light-signal-orange: var(--color-coffee-light);">
-                SOWAN KOPI
-            </div>
-            <p class="text-small text-white" style="opacity: 0.7;">Admin Panel</p>
-        </div>
-        <nav>
-            <a href="/admin/dashboard" class="sidebar-link active">
-                <span class="text-small">Dashboard</span>
-            </a>
-            <a href="/admin/orders" class="sidebar-link">
-                <span class="text-small">Pesanan</span>
-            </a>
-            <a href="/admin/menus" class="sidebar-link">
-                <span class="text-small">Menu</span>
-            </a>
-            <div style="margin-top: 48px;"></div>
-            <a href="/auth/logout" class="sidebar-link" style="--color-light-signal-orange: var(--color-signal-orange);">
-                <span class="text-small">Logout</span>
-            </a>
-        </nav>
-    </aside>
+<div class="dashboard-container">
+    {% include "admin/sidebar.html" %}
 
     <!-- Main Content -->
-    <main style="margin-left: 280px; padding: 48px;">
-        <div class="eyebrow mb-4">
-            <span>DASHBOARD</span>
+    <main class="main-content">
+        <!-- Welcome Header -->
+        <div class="welcome-header">
+            <div class="welcome-eyebrow">
+                <span class="welcome-eyebrow-dot"></span>
+                <span>Overview</span>
+            </div>
+            <h1 class="welcome-title">Ringkasan Hari Ini</h1>
+            <p class="welcome-subtitle">Pantau performa kedai kopi secara real-time</p>
         </div>
-        <h1 class="h1 mb-8">Ringkasan Hari Ini</h1>
 
         <!-- Stats Grid -->
-        <div class="stats-grid mb-12">
+        <div class="stats-grid">
+            <!-- Pending Orders -->
             <div class="stats-card">
-                <p class="stats-label">Pesanan Pending</p>
-                <p class="stats-value" style="color: var(--color-coffee-medium);">{{ stats.pending }}</p>
+                <div class="stats-card-bg" style="background: #D97706;"></div>
+                <div class="stats-card-header">
+                    <div class="stats-card-icon pending">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12,6 12,12 16,14"/>
+                        </svg>
+                    </div>
+                    <span class="stats-card-trend neutral">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="1"/>
+                        </svg>
+                        Live
+                    </span>
+                </div>
+                <div class="stats-card-label">Menunggu Konfirmasi</div>
+                <div class="stats-card-value pending">{{ stats.pending }}</div>
             </div>
+
+            <!-- Today's Orders -->
             <div class="stats-card">
-                <p class="stats-label">Pesanan Hari Ini</p>
-                <p class="stats-value" style="color: var(--color-coffee-dark);">{{ stats.today }}</p>
+                <div class="stats-card-bg" style="background: var(--color-coffee-dark);"></div>
+                <div class="stats-card-header">
+                    <div class="stats-card-icon today">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#065F46" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14,2 14,8 20,8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                        </svg>
+                    </div>
+                    <span class="stats-card-trend up">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="18,15 12,9 6,15"/>
+                        </svg>
+                        Hari ini
+                    </span>
+                </div>
+                <div class="stats-card-label">Total Pesanan</div>
+                <div class="stats-card-value today">{{ stats.today }}</div>
             </div>
+
+            <!-- Menu Count -->
             <div class="stats-card">
-                <p class="stats-label">Total Menu</p>
-                <p class="stats-value" style="color: var(--color-coffee-light);">{{ stats.menus }}</p>
+                <div class="stats-card-bg" style="background: var(--color-coffee-medium);"></div>
+                <div class="stats-card-header">
+                    <div class="stats-card-icon menus">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1E40AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="7" height="7"/>
+                            <rect x="14" y="3" width="7" height="7"/>
+                            <rect x="14" y="14" width="7" height="7"/>
+                            <rect x="3" y="14" width="7" height="7"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="stats-card-label">Menu Aktif</div>
+                <div class="stats-card-value menus">{{ stats.menus }}</div>
             </div>
+
+            <!-- Revenue -->
             <div class="stats-card">
-                <p class="stats-label">Pendapatan</p>
-                <p class="stats-value">Rp {{ stats.revenue|default(0)|int }}</p>
+                <div class="stats-card-bg" style="background: #7C3AED;"></div>
+                <div class="stats-card-header">
+                    <div class="stats-card-icon revenue">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="1" x2="12" y2="23"/>
+                            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                        </svg>
+                    </div>
+                    <span class="stats-card-trend up">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="18,15 12,9 6,15"/>
+                        </svg>
+                        IDR
+                    </span>
+                </div>
+                <div class="stats-card-label">Pendapatan Hari Ini</div>
+                <div class="stats-card-value revenue">{{ stats.revenue|default(0)|int }}</div>
             </div>
         </div>
 
         <!-- Recent Orders -->
-        <div class="card">
-            <div class="p-6 pb-4">
-                <h2 class="h3">Pesanan Terbaru</h2>
+        <div class="recent-orders-section">
+            <div class="section-header">
+                <h2 class="section-title">Pesanan Terbaru</h2>
+                <a href="/admin/orders" class="btn-view-all">
+                    <span>Lihat Semua</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9,18 15,12 9,6"/>
+                    </svg>
+                </a>
             </div>
-            <div style="overflow-x: auto;">
-                <table class="table">
+
+            <div class="orders-table-container">
+                {% if recent_orders %}
+                <table class="orders-table">
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>Meja</th>
+                            <th>ID Pesanan</th>
+                            <th>Nomor Meja</th>
                             <th>Total</th>
                             <th>Status</th>
                             <th>Waktu</th>
@@ -75,19 +505,31 @@
                     <tbody>
                         {% for order in recent_orders %}
                         <tr>
-                            <td class="text-small">#{{ order.id }}</td>
-                            <td class="text-small">{{ order.table_number }}</td>
-                            <td class="text-small">Rp {{ order.total_amount|int }}</td>
+                            <td><span class="order-id">#{{ order.id }}</span></td>
                             <td>
-                                <span class="badge badge-{{ order.status }}">
-                                    {{ order.status|title }}
+                                <span class="order-table-number">
+                                    <span class="order-table-icon">🪑</span>
+                                    Meja {{ order.table_number }}
                                 </span>
                             </td>
-                            <td class="text-small text-muted">{{ order.created_at.strftime('%H:%M') }}</td>
+                            <td><span class="order-total">Rp {{ "{:,}".format(order.total_amount|int) }}</span></td>
+                            <td>
+                                <span class="order-status {{ order.status.value }}">
+                                    <span class="order-status-dot"></span>
+                                    {% if order.status.value == 'pending' %}Menunggu{% elif order.status.value == 'paid' %}Dibayar{% elif order.status.value == 'completed' %}Selesai{% else %}Batal{% endif %}
+                                </span>
+                            </td>
+                            <td><span class="order-time">{{ order.created_at.strftime('%H:%M') }}</span></td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
+                {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon">📭</div>
+                    <p class="empty-state-text">Belum ada pesanan hari ini</p>
+                </div>
+                {% endif %}
             </div>
         </div>
     </main>
