@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     APP_NAME: str = "SelfCafe Ordering"
     DEBUG: bool = True
+    NUM_TABLES: int = 10
 
     @property
     def DATABASE_URL(self) -> str:

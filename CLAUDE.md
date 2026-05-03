@@ -57,13 +57,31 @@ routes/ (FastAPI routers) → services/ (business logic) → models/ (SQLAlchemy
 | `app/dependencies.py` | Auth: get_current_user (JWT), require_role() helper |
 | `app/services/auth_service.py` | Password hashing (bcrypt), JWT token creation/verification |
 | `app/services/upload.py` | Image upload handling (menu item photos) |
+| `app/services/tracking.py` | QR token generation, order tracking lookups |
 
 ### Routes Organization
 
 - **auth** (`/auth/*`) - Login page, POST login (sets JWT cookie), logout
-- **customer** (`/customer/*`) - Ordering interface, menu API, order creation
+- **customer** (`/customer/*`) - Ordering interface, menu API, order creation, QR tracking
+- **cashier** (`/cashier/*`) - Dashboard for QR scanning, payment processing (JWT protected)
 - **admin** (`/admin/*`) - Dashboard, orders list, menu management (all JWT protected)
-- **api** (`/api/*`) - JSON API for menu CRUD (JWT protected)
+- **api** (`/api/*`) - JSON API for menu CRUD, cashier operations (JWT protected)
+
+### QR Order Tracking
+
+Orders generate unique `tracking_token` (UUID v4) for customer tracking and cashier payment.
+
+**Flow:** Customer orders → gets QR code → scans to track status → cashier scans to process payment
+
+**Endpoints:**
+```
+GET  /customer/qr/{token}        # QR code image
+GET  /customer/track/{token}     # Customer tracking page
+POST /api/cashier/scan           # Cashier retrieve order by token
+PUT  /api/cashier/pay/{id}       # PENDING → PAID
+PUT  /api/cashier/complete/{id}  # PAID → COMPLETED
+GET  /api/cashier/orders         # List pending orders
+```
 
 ### Models (SQLAlchemy)
 

@@ -1,0 +1,414 @@
+{% extends "base.html" %}
+
+{% block title %}Meja - Admin{% endblock %}
+
+{% block extra_head %}
+<style>
+/* ===== Tables Page Styles ===== */
+.tables-container {
+    min-height: 100vh;
+    background: var(--color-canvas-cream);
+}
+
+/* Main Content */
+.main-content {
+    margin-left: 280px;
+    padding: 48px 64px;
+    min-height: 100vh;
+}
+
+@media (max-width: 1024px) {
+    .main-content { padding: 32px 40px; }
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        margin-left: 0;
+        padding: 24px;
+        padding-top: 80px;
+    }
+}
+
+/* Page Header */
+.page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 40px;
+    animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.page-title-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.page-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-coffee-medium);
+}
+
+.page-eyebrow-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--color-light-signal-orange);
+    border-radius: 50%;
+}
+
+.page-title {
+    font-size: 48px;
+    font-weight: 500;
+    letter-spacing: -0.04em;
+    line-height: 1.1;
+    color: var(--color-ink-black);
+}
+
+.page-subtitle {
+    font-size: 16px;
+    color: var(--color-slate-gray);
+    font-weight: 450;
+}
+
+/* Download All Button */
+.btn-download-all {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 28px;
+    font-size: 15px;
+    font-weight: 500;
+    background: var(--color-ink-black);
+    color: var(--color-white);
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.1);
+}
+
+.btn-download-all:hover {
+    background: #2a2a2a;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px 0 rgba(0, 0, 0, 0.15);
+}
+
+.btn-download-all:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Tables Grid */
+.tables-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+    animation: fadeInUp 0.5s ease-out 0.1s backwards;
+}
+
+.table-card {
+    background: var(--color-white);
+    border-radius: var(--radius-xl);
+    padding: 28px;
+    box-shadow: var(--shadow-card);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.table-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 32px 64px 0 rgba(0, 0, 0, 0.12);
+}
+
+.table-number {
+    font-size: 48px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--color-ink-black);
+}
+
+.table-label {
+    font-size: 14px;
+    color: var(--color-slate-gray);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+}
+
+.table-qr {
+    width: 180px;
+    height: 180px;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--color-lifted-cream);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.table-qr img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.table-actions {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+}
+
+.table-btn {
+    flex: 1;
+    padding: 12px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    border: 1.5px solid rgba(20, 20, 19, 0.15);
+    background: var(--color-white);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.table-btn:hover {
+    border-color: var(--color-ink-black);
+    background: var(--color-lifted-cream);
+}
+
+.table-btn.primary {
+    background: var(--color-ink-black);
+    color: var(--color-white);
+    border-color: var(--color-ink-black);
+}
+
+.table-btn.primary:hover {
+    background: #2a2a2a;
+}
+
+/* Toast */
+.toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    padding: 16px 24px;
+    background: var(--color-ink-black);
+    color: var(--color-white);
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 12px 24px 0 rgba(0, 0, 0, 0.15);
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 2000;
+}
+
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.success { background: #059669; }
+.toast.error { background: #DC2626; }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .page-header { flex-direction: column; gap: 20px; }
+    .page-title { font-size: 36px; }
+    .tables-grid { grid-template-columns: 1fr; }
+    .btn-download-all { width: 100%; justify-content: center; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="tables-container">
+    {% include "admin/sidebar.html" %}
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="page-title-section">
+                <div class="page-eyebrow">
+                    <span class="page-eyebrow-dot"></span>
+                    <span>QR Meja</span>
+                </div>
+                <h1 class="page-title">Daftar Meja</h1>
+                <p class="page-subtitle">Generate dan download QR code untuk setiap meja</p>
+            </div>
+
+            <button class="btn-download-all" id="downloadAllBtn" onclick="downloadAll()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                Download Semua QR
+            </button>
+        </div>
+
+        <!-- Tables Grid -->
+        <div class="tables-grid" id="tablesGrid">
+            {% for table in tables %}
+            <div class="table-card" data-table="{{ table.number }}">
+                <div class="table-number">{{ table.number }}</div>
+                <div class="table-qr">
+                    <img src="{{ table.qr_url }}" alt="QR Meja {{ table.number }}" id="qr-{{ table.number }}">
+                </div>
+                <div class="table-actions">
+                    <button class="table-btn primary" onclick="downloadQR({{ table.number }})">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        Download
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function showToast(message, type = '') {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.className = 'toast ' + type;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+async function downloadQR(tableNumber) {
+    try {
+        const response = await fetch(`/admin/qr/table/${tableNumber}`);
+        if (!response.ok) throw new Error('Gagal mengambil QR');
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `qr-meja-${tableNumber}.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+
+        showToast(`QR Meja ${tableNumber} berhasil didownload`, 'success');
+    } catch (err) {
+        showToast(err.message, 'error');
+    }
+}
+
+async function downloadAll() {
+    const btn = document.getElementById('downloadAllBtn');
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = `
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="spin">
+            <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+        </svg>
+        Downloading...
+    `;
+
+    // Add spin animation
+    if (!document.querySelector('#spinStyle')) {
+        const style = document.createElement('style');
+        style.id = 'spinStyle';
+        style.textContent = '@keyframes spin { to { transform: rotate(360deg); } } .spin { animation: spin 1s linear infinite; }';
+        document.head.appendChild(style);
+    }
+
+    try {
+        // Fetch all QR codes
+        const tableCards = document.querySelectorAll('.table-card');
+        const total = tableCards.length;
+
+        // Use JSZip to bundle all QRs
+        const JSZip = (await loadJSZip()).JSZip;
+        const zip = new JSZip();
+
+        let downloaded = 0;
+        for (const card of tableCards) {
+            const tableNum = card.dataset.table;
+            try {
+                const response = await fetch(`/admin/qr/table/${tableNum}`);
+                if (response.ok) {
+                    const blob = await response.blob();
+                    zip.file(`qr-meja-${tableNum}.png`, blob);
+                }
+            } catch (e) {
+                console.error(`Failed to download QR for table ${tableNum}`, e);
+            }
+            downloaded++;
+            btn.innerHTML = `
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="spin">
+                    <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                </svg>
+                Downloading... ${downloaded}/${total}
+            `;
+        }
+
+        // Generate ZIP
+        const content = await zip.generateAsync({ type: 'blob' });
+        const url = window.URL.createObjectURL(content);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'qr-semua-meja.zip';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+
+        showToast('Semua QR berhasil didownload', 'success');
+    } catch (err) {
+        console.error(err);
+        // Fallback: download individually
+        showToast('Mengdownload satu per satu...', 'success');
+        const tableCards = document.querySelectorAll('.table-card');
+        for (const card of tableCards) {
+            await downloadQR(parseInt(card.dataset.table));
+            await new Promise(r => setTimeout(r, 200)); // Small delay between downloads
+        }
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    }
+}
+
+// Load JSZip from CDN
+function loadJSZip() {
+    if (window.JSZip) return Promise.resolve({ JSZip: window.JSZip });
+
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js';
+        script.onload = () => resolve({ JSZip: window.JSZip });
+        script.onerror = reject;
+        document.head.appendChild(script);
+    });
+}
+</script>
+{% endblock %}

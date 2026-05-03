@@ -21,6 +21,9 @@ This document tracks AI agents used in developing the SelfCafe Ordering System.
 - `superpowers:code-review` - Code quality verification after implementation
 - `superpowers:verification-before-completion` - Final validation before task completion
 
+### Communication Mode
+- `caveman:caveman` - Token-optimized communication (60-90% savings)
+
 ## Workflow Summary
 
 1. **Design Phase** (`brainstorming` → `writing-plans`)
@@ -48,12 +51,13 @@ This document tracks AI agents used in developing the SelfCafe Ordering System.
 | Customer Interface | 10-11 | general-purpose |
 | Admin Dashboard | 12-15 | general-purpose |
 | Extras | 16-17 | general-purpose |
+| QR Order Tracking | 18 | general-purpose |
 
 ## Session Statistics
 
-- **Total commits**: 15+
-- **Files created**: 40+
-- **Lines of code**: ~3000+
+- **Total commits**: 25
+- **Files tracked**: 83
+- **Python LOC**: ~1200
 - **Design system**: Mastercard-inspired CSS (~600 lines)
 
 ## Key Design Decisions
@@ -63,6 +67,7 @@ This document tracks AI agents used in developing the SelfCafe Ordering System.
 3. **Auth**: JWT with httponly cookies (session-based for coffee shop context)
 4. **Design System**: Mastercard-inspired (canvas cream, pill buttons, Inter font)
 5. **Frontend**: Vanilla JavaScript with Jinja2 (no frontend framework for simplicity)
+6. **QR Tracking**: UUID v4 tokens for order tracking, cashier scan interface (qrcode[pil] dependency)
 
 ## Related Documentation
 
