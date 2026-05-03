@@ -92,6 +92,87 @@
     animation: fadeInUp 0.5s ease-out 0.1s backwards;
 }
 
+/* Date Filter */
+.date-filter {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: var(--color-white);
+    padding: 16px 24px;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-card);
+    margin-bottom: 24px;
+    animation: fadeInUp 0.5s ease-out 0.15s backwards;
+}
+
+.date-filter-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.date-filter-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-slate-gray);
+}
+
+.date-filter-input {
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 450;
+    border: 1.5px solid rgba(20, 20, 19, 0.15);
+    border-radius: var(--radius-md);
+    outline: none;
+    transition: all 0.2s ease;
+    font-family: var(--font-body);
+}
+
+.date-filter-input:focus {
+    border-color: var(--color-ink-black);
+    box-shadow: 0 0 0 3px rgba(20, 20, 19, 0.05);
+}
+
+.date-filter-separator {
+    font-size: 14px;
+    color: var(--color-slate-gray);
+}
+
+.date-filter-actions {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.date-filter-btn {
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.date-filter-btn.primary {
+    background: var(--color-ink-black);
+    color: var(--color-white);
+}
+
+.date-filter-btn.primary:hover {
+    background: #2a2a2a;
+}
+
+.date-filter-btn.secondary {
+    background: var(--color-lifted-cream);
+    color: var(--color-ink-black);
+    border: 1.5px solid rgba(20, 20, 19, 0.15);
+}
+
+.date-filter-btn.secondary:hover {
+    border-color: var(--color-ink-black);
+}
+
 .filter-tab {
     padding: 10px 24px;
     font-size: 14px;
@@ -245,6 +326,25 @@
 
 @keyframes statusPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
+.order-card-status {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-end;
+}
+
+.payment-method-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: rgba(111, 78, 55, 0.1);
+    color: var(--color-coffee-medium);
+    border-radius: var(--radius-md);
+    font-size: 12px;
+    font-weight: 500;
+}
+
 .order-card-actions { display: flex; gap: 8px; }
 
 .order-action-btn {
@@ -263,6 +363,8 @@
 .order-action-btn.primary:hover { background: #2a2a2a; }
 .order-action-btn.success { background: #059669; border-color: #059669; color: var(--color-white); }
 .order-action-btn.success:hover { background: #047857; }
+.order-action-btn.danger { background: #DC2626; border-color: #DC2626; color: var(--color-white); }
+.order-action-btn.danger:hover { background: #B91C1C; }
 
 .order-card-details {
     display: none;
@@ -327,6 +429,153 @@
 .toast.success { background: #059669; }
 .toast.error { background: #DC2626; }
 
+/* Payment Modal */
+.payment-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    animation: fadeIn 0.2s ease;
+}
+
+.payment-modal-overlay.show { display: flex; }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.payment-modal {
+    background: var(--color-white);
+    border-radius: var(--radius-xl);
+    box-shadow: 0 40px 80px 0 rgba(0, 0, 0, 0.2);
+    max-width: 420px;
+    width: calc(100% - 32px);
+    animation: modalSlide 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes modalSlide {
+    from { opacity: 0; transform: translateY(20px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.payment-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px 28px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.payment-modal-title {
+    font-size: 20px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    color: var(--color-ink-black);
+}
+
+.payment-modal-close {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-lifted-cream);
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-size: 20px;
+    color: var(--color-slate-gray);
+    transition: all 0.15s ease;
+}
+
+.payment-modal-close:hover {
+    background: rgba(0, 0, 0, 0.08);
+    color: var(--color-ink-black);
+}
+
+.payment-modal-body { padding: 28px; }
+
+.payment-method-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.payment-method-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 16px;
+    background: var(--color-lifted-cream);
+    border: 2px solid transparent;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.payment-method-btn:hover {
+    border-color: var(--color-coffee-medium);
+    background: var(--color-white);
+}
+
+.payment-method-btn.selected {
+    border-color: var(--color-ink-black);
+    background: var(--color-white);
+    box-shadow: 0 0 0 3px rgba(20, 20, 19, 0.1);
+}
+
+.payment-method-icon { font-size: 32px; }
+.payment-method-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-ink-black);
+}
+
+.payment-modal-footer {
+    display: flex;
+    gap: 12px;
+    padding: 20px 28px 28px;
+}
+
+.payment-modal-btn {
+    flex: 1;
+    padding: 14px 24px;
+    font-size: 15px;
+    font-weight: 500;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.payment-modal-btn.primary {
+    background: var(--color-ink-black);
+    color: var(--color-white);
+}
+
+.payment-modal-btn.primary:hover {
+    background: #2a2a2a;
+}
+
+.payment-modal-btn.primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.payment-modal-btn.secondary {
+    background: var(--color-white);
+    color: var(--color-ink-black);
+    border: 1.5px solid rgba(20, 20, 19, 0.15);
+}
+
+.payment-modal-btn.secondary:hover {
+    border-color: var(--color-ink-black);
+    background: var(--color-lifted-cream);
+}
+
 /* Responsive */
 @media (max-width: 900px) {
     .page-header { flex-direction: column; gap: 24px; }
@@ -379,6 +628,25 @@
                     Selesai
                     <span class="count">{{ orders|selectattr('status', 'equalto', 'completed')|list|length }}</span>
                 </button>
+                <button class="filter-tab" onclick="filterOrders('cancelled')">
+                    Batal
+                    <span class="count">{{ orders|selectattr('status', 'equalto', 'cancelled')|list|length }}</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Date Filter -->
+        <div class="date-filter">
+            <div class="date-filter-group">
+                <label class="date-filter-label">Dari:</label>
+                <input type="date" id="dateFrom" class="date-filter-input">
+                <span class="date-filter-separator">—</span>
+                <label class="date-filter-label">Sampai:</label>
+                <input type="date" id="dateTo" class="date-filter-input">
+            </div>
+            <div class="date-filter-actions">
+                <button class="date-filter-btn primary" onclick="applyDateFilter()">Filter</button>
+                <button class="date-filter-btn secondary" onclick="resetDateFilter()">Reset</button>
             </div>
         </div>
 
@@ -390,7 +658,7 @@
                     <div class="order-card-header">
                         <div class="order-card-id">
                             <span class="order-card-number">#{{ order.id }}</span>
-                            <span class="order-card-time">{{ order.created_at.strftime('%H:%M') }}</span>
+                            <span class="order-card-time" data-date="{{ order.created_at.strftime('%Y-%m-%d') }}">{{ order.created_at.strftime('%d %b %Y, %H:%M') }}</span>
                         </div>
 
                         <div class="order-card-table">
@@ -422,6 +690,15 @@
                                 <span class="order-status-badge-dot"></span>
                                 {% if order.status.value == 'pending' %}Menunggu{% elif order.status.value == 'paid' %}Dibayar{% elif order.status.value == 'completed' %}Selesai{% else %}Batal{% endif %}
                             </span>
+                            {% if order.payment_method %}
+                            <span class="payment-method-badge">
+                                {% if order.payment_method == 'cash' %}💵 Tunai
+                                {% elif order.payment_method == 'qris' %}📱 QRIS
+                                {% elif order.payment_method == 'transfer' %}🏦 Transfer
+                                {% elif order.payment_method == 'e-wallet' %}💳 E-Wallet
+                                {% else %}{{ order.payment_method }}{% endif %}
+                            </span>
+                            {% endif %}
                         </div>
 
                         <div class="order-card-actions">
@@ -429,9 +706,15 @@
                             <button class="order-action-btn success" onclick="updateStatus({{ order.id }}, 'paid')">
                                 Konfirmasi
                             </button>
+                            <button class="order-action-btn danger" onclick="updateStatus({{ order.id }}, 'cancelled')">
+                                Batal
+                            </button>
                             {% elif order.status.value == 'paid' %}
                             <button class="order-action-btn primary" onclick="updateStatus({{ order.id }}, 'completed')">
                                 Selesai
+                            </button>
+                            <button class="order-action-btn danger" onclick="updateStatus({{ order.id }}, 'cancelled')">
+                                Batal
                             </button>
                             {% endif %}
                             <button class="order-action-btn" onclick="toggleDetails({{ order.id }})">
@@ -467,8 +750,53 @@
 <!-- Toast Notification -->
 <div class="toast" id="toast"></div>
 
+<!-- Payment Method Modal -->
+<div class="payment-modal-overlay" id="paymentModal">
+    <div class="payment-modal">
+        <div class="payment-modal-header">
+            <h3 class="payment-modal-title">Konfirmasi Pembayaran</h3>
+            <button class="payment-modal-close" onclick="closePaymentModal()" aria-label="Tutup">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="payment-modal-body">
+            <p style="font-size: 14px; color: var(--color-slate-gray); margin-bottom: 20px;">Pilih metode pembayaran:</p>
+            <div class="payment-method-grid">
+                <button class="payment-method-btn" data-method="cash" onclick="selectPaymentMethod('cash')">
+                    <span class="payment-method-icon">💵</span>
+                    <span class="payment-method-label">Tunai</span>
+                </button>
+                <button class="payment-method-btn" data-method="qris" onclick="selectPaymentMethod('qris')">
+                    <span class="payment-method-icon">📱</span>
+                    <span class="payment-method-label">QRIS</span>
+                </button>
+                <button class="payment-method-btn" data-method="transfer" onclick="selectPaymentMethod('transfer')">
+                    <span class="payment-method-icon">🏦</span>
+                    <span class="payment-method-label">Transfer</span>
+                </button>
+                <button class="payment-method-btn" data-method="e-wallet" onclick="selectPaymentMethod('e-wallet')">
+                    <span class="payment-method-icon">💳</span>
+                    <span class="payment-method-label">E-Wallet</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="payment-modal-footer">
+            <button class="payment-modal-btn secondary" onclick="closePaymentModal()">Batal</button>
+            <button class="payment-modal-btn primary" id="confirmPaymentBtn" onclick="confirmPayment()" disabled>Konfirmasi</button>
+        </div>
+    </div>
+</div>
+
 <script>
 let currentFilter = 'all';
+let dateFilter = { from: null, to: null };
+let pendingOrderId = null;
+let selectedPaymentMethod = null;
 
 function filterOrders(status) {
     currentFilter = status;
@@ -476,7 +804,10 @@ function filterOrders(status) {
     let visibleCount = 0;
 
     cards.forEach(card => {
-        if (status === 'all' || card.dataset.status === status) {
+        let statusMatch = status === 'all' || card.dataset.status === status;
+        let dateMatch = checkDateMatch(card);
+
+        if (statusMatch && dateMatch) {
             card.style.display = '';
             visibleCount++;
         } else {
@@ -491,7 +822,66 @@ function filterOrders(status) {
     event.target.closest('.filter-tab').classList.add('active');
 }
 
+function checkDateMatch(card) {
+    if (!dateFilter.from && !dateFilter.to) return true;
+
+    const cardDate = card.querySelector('.order-card-time').dataset.date;
+    if (!cardDate) return true;
+
+    const cardDateObj = new Date(cardDate);
+    const fromDate = dateFilter.from ? new Date(dateFilter.from) : null;
+    const toDate = dateFilter.to ? new Date(dateFilter.to) : null;
+
+    if (fromDate && cardDateObj < fromDate) return false;
+    if (toDate && cardDateObj > toDate) return false;
+
+    return true;
+}
+
+function applyDateFilter() {
+    dateFilter.from = document.getElementById('dateFrom').value || null;
+    dateFilter.to = document.getElementById('dateTo').value || null;
+
+    const cards = document.querySelectorAll('.order-card');
+    let visibleCount = 0;
+
+    cards.forEach(card => {
+        let statusMatch = currentFilter === 'all' || card.dataset.status === currentFilter;
+        let dateMatch = checkDateMatch(card);
+
+        if (statusMatch && dateMatch) {
+            card.style.display = '';
+            visibleCount++;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+
+    showToast(`${visibleCount} pesanan ditemukan`, 'success');
+}
+
+function resetDateFilter() {
+    document.getElementById('dateFrom').value = '';
+    document.getElementById('dateTo').value = '';
+    dateFilter = { from: null, to: null };
+    filterOrders(currentFilter);
+    showToast('Filter tanggal direset', 'success');
+}
+
 async function updateStatus(orderId, status) {
+    if (status === 'cancelled') {
+        if (!confirm('Batalkan pesanan ini?')) return;
+    }
+
+    if (status === 'paid') {
+        pendingOrderId = orderId;
+        selectedPaymentMethod = null;
+        document.querySelectorAll('.payment-method-btn').forEach(btn => btn.classList.remove('selected'));
+        document.getElementById('confirmPaymentBtn').disabled = true;
+        document.getElementById('paymentModal').classList.add('show');
+        return;
+    }
+
     const card = document.getElementById(`order-${orderId}`);
     card.style.opacity = '0.5';
     card.style.pointerEvents = 'none';
@@ -516,6 +906,70 @@ async function updateStatus(orderId, status) {
     }
 }
 
+function selectPaymentMethod(method) {
+    selectedPaymentMethod = method;
+    document.querySelectorAll('.payment-method-btn').forEach(btn => {
+        btn.classList.remove('selected');
+        if (btn.dataset.method === method) {
+            btn.classList.add('selected');
+        }
+    });
+    document.getElementById('confirmPaymentBtn').disabled = false;
+}
+
+function closePaymentModal() {
+    document.getElementById('paymentModal').classList.remove('show');
+    pendingOrderId = null;
+    selectedPaymentMethod = null;
+}
+
+async function confirmPayment() {
+    if (!pendingOrderId || !selectedPaymentMethod) return;
+
+    const orderId = pendingOrderId;
+    const paymentMethod = selectedPaymentMethod;
+    const card = document.getElementById(`order-${orderId}`);
+
+    if (!card) {
+        showToast('Order tidak ditemukan', 'error');
+        closePaymentModal();
+        return;
+    }
+
+    card.style.opacity = '0.5';
+    card.style.pointerEvents = 'none';
+
+    try {
+        const payload = {
+            status: 'paid',
+            payment_method: paymentMethod
+        };
+        console.log('Sending payload:', payload);
+
+        const response = await fetch(`/admin/orders/${orderId}/status`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        console.log('Response status:', response.status);
+        const result = await response.json();
+        console.log('Response data:', result);
+
+        if (response.ok) {
+            showToast('Pembayaran berhasil dikonfirmasi', 'success');
+            closePaymentModal();
+            setTimeout(() => location.reload(), 500);
+        } else {
+            throw new Error('Gagal konfirmasi pembayaran');
+        }
+    } catch (error) {
+        showToast(error.message, 'error');
+        card.style.opacity = '';
+        card.style.pointerEvents = '';
+    }
+}
+
 function toggleDetails(orderId) {
     document.getElementById(`details-${orderId}`).classList.toggle('show');
 }
@@ -531,6 +985,7 @@ function showToast(message, type = '') {
 // Keyboard shortcuts
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
+        closePaymentModal();
         document.querySelectorAll('.order-card-details').forEach(details => {
             details.classList.remove('show');
         });

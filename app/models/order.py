@@ -19,6 +19,7 @@ class Order(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     total_amount = Column(Numeric(10, 2), default=0)
     status = Column(Enum(OrderStatus), default=OrderStatus.PENDING, nullable=False)
+    payment_method = Column(String(50), nullable=True)
     tracking_token = Column(String(36), unique=True, nullable=False, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

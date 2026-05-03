@@ -1,7 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, Response
 from sqlalchemy.orm import Session
+import qrcode
+import io
+from typing import Optional
+from app.config import settings
 from sqlalchemy import func, desc
 from datetime import datetime, date
 from app.database import get_db
@@ -56,11 +60,14 @@ async def orders_page(
         "orders": orders
     })
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from pydantic import ConfigDict
 
 
 class OrderStatusUpdate(BaseModel):
+    model_config = ConfigDict(extra='allow')
     status: OrderStatus
+    payment_method: str | None = Field(default=None)
 
 
 @router.put("/orders/{order_id}/status")
@@ -70,12 +77,22 @@ async def update_order_status(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    import sys
+    print(f"DEBUG: update_data.model_dump={update_data.model_dump()}", file=sys.stderr, flush=True)
+    print(f"DEBUG: payment_method={update_data.payment_method}", file=sys.stderr, flush=True)
+
     order = db.query(Order).filter(Order.id == order_id).first()
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
 
     order.status = update_data.status
+    if update_data.payment_method:
+        order.payment_method = update_data.payment_method
+        print(f"DEBUG: Set payment_method to {order.payment_method}", file=sys.stderr, flush=True)
+
     db.commit()
+    db.refresh(order)
+    print(f"DEBUG: After commit, payment_method={order.payment_method}", file=sys.stderr, flush=True)
 
     return {"success": True, "order_id": order_id, "status": update_data.status.value}
 
@@ -90,3 +107,50 @@ async def menus_page(
         "request": request,
         "menus": menus
     })
+
+@router.get("/tables", response_class=HTMLResponse)
+async def tables_page(
+    request: Request,
+    current_user: User = Depends(get_current_user)
+):
+    num_tables = settings.NUM_TABLES
+    base_url = f"{request.url.scheme}://{request.url.netloc}"
+
+    tables = []
+    for i in range(1, num_tables + 1):
+        tables.append({
+            "number": i,
+            "qr_url": f"/admin/qr/table/{i}",
+            "customer_url": f"{base_url}/customer?table={i}"
+        })
+
+    return templates.TemplateResponse("admin/tables.html", {
+        "request": request,
+        "tables": tables
+    })
+
+@router.get("/qr/table/{table_number}")
+async def generate_table_qr(
+    table_number: int,
+    request: Request,
+    current_user: User = Depends(get_current_user)
+):
+    base_url = f"{request.url.scheme}://{request.url.netloc}"
+    customer_url = f"{base_url}/customer?table={table_number}"
+
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(customer_url)
+    qr.make(fit=True)
+
+    img = qr.make_image(fill_color="black", back_color="white")
+
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    buf.seek(0)
+
+    return Response(content=buf.read(), media_type="image/png")
