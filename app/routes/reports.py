@@ -16,3 +16,33 @@ from app.models.order import OrderItem
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
+
+
+def get_daily_sales_data(db: Session, start_date: date, end_date: date) -> dict:
+    """Query daily sales metrics for date range."""
+
+    # Query orders in date range with paid/completed status
+    orders = db.query(Order).filter(
+        func.date(Order.created_at) >= start_date,
+        func.date(Order.created_at) <= end_date,
+        Order.status.in_([OrderStatus.PAID, OrderStatus.COMPLETED])
+    ).all()
+
+    if not orders:
+        return {
+            "total_revenue": Decimal("0.00"),
+            "order_count": 0,
+            "average_order_value": Decimal("0.00"),
+            "date_range": {"start": start_date, "end": end_date}
+        }
+
+    total_revenue = sum(order.total_amount for order in orders)
+    order_count = len(orders)
+    average_order_value = total_revenue / order_count if order_count > 0 else Decimal("0.00")
+
+    return {
+        "total_revenue": total_revenue,
+        "order_count": order_count,
+        "average_order_value": average_order_value,
+        "date_range": {"start": start_date, "end": end_date}
+    }
