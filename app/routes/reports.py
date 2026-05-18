@@ -46,3 +46,42 @@ def get_daily_sales_data(db: Session, start_date: date, end_date: date) -> dict:
         "average_order_value": average_order_value,
         "date_range": {"start": start_date, "end": end_date}
     }
+
+
+def get_best_sellers_data(db: Session, start_date: date, end_date: date) -> list:
+    """Query top 10 best selling menu items for date range."""
+
+    # Join order_items with menus and orders, filter by date and status
+    results = db.query(
+        Menu.name.label("menu_name"),
+        Category.name.label("category_name"),
+        func.sum(OrderItem.quantity).label("quantity_sold"),
+        func.sum(OrderItem.subtotal).label("total_revenue")
+    ).join(
+        OrderItem, Menu.id == OrderItem.menu_id
+    ).join(
+        Order, OrderItem.order_id == Order.id
+    ).join(
+        Category, Menu.category_id == Category.id
+    ).filter(
+        func.date(Order.created_at) >= start_date,
+        func.date(Order.created_at) <= end_date,
+        Order.status.in_([OrderStatus.PAID, OrderStatus.COMPLETED])
+    ).group_by(
+        Menu.id, Menu.name, Category.name
+    ).order_by(
+        desc("quantity_sold")
+    ).limit(10).all()
+
+    # Format results with rank
+    best_sellers = []
+    for rank, row in enumerate(results, start=1):
+        best_sellers.append({
+            "rank": rank,
+            "menu_name": row.menu_name,
+            "category_name": row.category_name,
+            "quantity_sold": int(row.quantity_sold),
+            "total_revenue": row.total_revenue
+        })
+
+    return best_sellers
