@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - SelfCafe Admin</title>
+    <link rel="stylesheet" href="/static/css/design-system.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
+    <style>
+        body {
+            display: flex;
+            margin: 0;
+            background: #F3F0EE;
+            font-family: Inter, sans-serif;
+        }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 40px;
+            width: calc(100% - 280px);
+        }
+
+        .page-header {
+            margin-bottom: 32px;
+        }
+
+        .page-title {
+            font-size: 36px;
+            font-weight: 500;
+            color: #141413;
+            letter-spacing: -0.02em;
+            margin: 0;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .tab-button {
+            padding: 8px 24px;
+            border-radius: 20px;
+            border: 1.5px solid #141413;
+            background: white;
+            color: #141413;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .tab-button.active {
+            background: #141413;
+            color: #F3F0EE;
+        }
+
+        .date-filter {
+            background: white;
+            padding: 24px;
+            border-radius: 40px;
+            margin-bottom: 24px;
+            box-shadow: rgba(0,0,0,0.08) 0px 24px 48px;
+        }
+
+        .date-filter form {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .date-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .date-input-group label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #141413;
+        }
+
+        .date-input-group input {
+            padding: 8px 16px;
+            border: 1.5px solid #141413;
+            border-radius: 20px;
+            font-size: 16px;
+            font-family: Inter, sans-serif;
+        }
+
+        .submit-button {
+            padding: 8px 24px;
+            border-radius: 20px;
+            background: #141413;
+            color: #F3F0EE;
+            border: none;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .report-card {
+            background: white;
+            padding: 32px;
+            border-radius: 40px;
+            box-shadow: rgba(0,0,0,0.08) 0px 24px 48px;
+            margin-bottom: 24px;
+        }
+
+        .metrics-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .metric-box {
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 36px;
+            font-weight: 500;
+            color: #141413;
+            margin: 0 0 8px 0;
+        }
+
+        .metric-label {
+            font-size: 14px;
+            font-weight: 450;
+            color: #696969;
+            margin: 0;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #141413;
+            border-bottom: 2px solid #F3F0EE;
+        }
+
+        td {
+            padding: 12px;
+            font-size: 16px;
+            font-weight: 450;
+            color: #141413;
+            border-bottom: 1px solid #F3F0EE;
+        }
+
+        tr.top-3 {
+            background: rgba(111, 78, 55, 0.05);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 48px;
+            color: #696969;
+            font-size: 16px;
+        }
+
+        .chart-container {
+            margin-top: 32px;
+            height: 400px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+                padding: 20px;
+            }
+
+            .metrics-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    {% include "admin/sidebar.html" %}
+
+    <div class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">Reports</h1>
+        </div>
+
+        <div class="tabs">
+            <a href="/admin/reports?start={{ start_date }}&end={{ end_date }}&tab=daily-sales"
+               class="tab-button {% if active_tab == 'daily-sales' %}active{% endif %}">
+                Daily Sales
+            </a>
+            <a href="/admin/reports?start={{ start_date }}&end={{ end_date }}&tab=best-sellers"
+               class="tab-button {% if active_tab == 'best-sellers' %}active{% endif %}">
+                Best Sellers
+            </a>
+        </div>
+
+        <div class="date-filter">
+            <form method="get" action="/admin/reports">
+                <input type="hidden" name="tab" value="{{ active_tab }}">
+
+                <div class="date-input-group">
+                    <label for="start">Start Date</label>
+                    <input type="text" id="start" name="start" value="{{ start_date }}" required>
+                </div>
+
+                <div class="date-input-group">
+                    <label for="end">End Date</label>
+                    <input type="text" id="end" name="end" value="{{ end_date }}" required>
+                </div>
+
+                <button type="submit" class="submit-button">Apply Filter</button>
+            </form>
+        </div>
+
+        {% if active_tab == 'daily-sales' and daily_sales %}
+        <div class="report-card">
+            <div class="metrics-row">
+                <div class="metric-box">
+                    <p class="metric-value">Rp {{ "{:,.0f}".format(daily_sales.total_revenue) }}</p>
+                    <p class="metric-label">Total Revenue</p>
+                </div>
+                <div class="metric-box">
+                    <p class="metric-value">{{ daily_sales.order_count }}</p>
+                    <p class="metric-label">Order Count</p>
+                </div>
+                <div class="metric-box">
+                    <p class="metric-value">Rp {{ "{:,.0f}".format(daily_sales.average_order_value) }}</p>
+                    <p class="metric-label">Average Order Value</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if active_tab == 'best-sellers' and best_sellers %}
+        <div class="report-card">
+            {% if best_sellers|length > 0 %}
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Menu Name</th>
+                            <th>Category</th>
+                            <th>Quantity Sold</th>
+                            <th>Revenue</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in best_sellers %}
+                        <tr {% if item.rank <= 3 %}class="top-3"{% endif %}>
+                            <td>{{ item.rank }}</td>
+                            <td>{{ item.menu_name }}</td>
+                            <td>{{ item.category_name }}</td>
+                            <td>{{ item.quantity_sold }}</td>
+                            <td>Rp {{ "{:,.0f}".format(item.total_revenue) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="bestSellersChart"></canvas>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                No data available for selected date range
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        // Initialize date pickers
+        flatpickr("#start", {
+            dateFormat: "Y-m-d",
+            maxDate: "today"
+        });
+
+        flatpickr("#end", {
+            dateFormat: "Y-m-d",
+            maxDate: "today"
+        });
+
+        // Initialize chart for best sellers
+        {% if active_tab == 'best-sellers' and best_sellers and best_sellers|length > 0 %}
+        const ctx = document.getElementById('bestSellersChart');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: [
+                    {% for item in best_sellers %}
+                    "{{ item.menu_name }}"{% if not loop.last %},{% endif %}
+                    {% endfor %}
+                ],
+                datasets: [{
+                    label: 'Quantity Sold',
+                    data: [
+                        {% for item in best_sellers %}
+                        {{ item.quantity_sold }}{% if not loop.last %},{% endif %}
+                        {% endfor %}
+                    ],
+                    backgroundColor: '#6F4E37',
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+        {% endif %}
+    </script>
+</body>
+</html>
