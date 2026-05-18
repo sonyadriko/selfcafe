@@ -85,3 +85,56 @@ def get_best_sellers_data(db: Session, start_date: date, end_date: date) -> list
         })
 
     return best_sellers
+
+
+@router.get("/reports", response_class=HTMLResponse)
+async def reports_page(
+    request: Request,
+    start: Optional[str] = Query(None),
+    end: Optional[str] = Query(None),
+    tab: Optional[str] = Query("daily-sales"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Reports page with daily sales and best sellers."""
+
+    # Default to today if no dates provided
+    if not start or not end:
+        today = date.today()
+        start_date = today
+        end_date = today
+    else:
+        try:
+            start_date = date.fromisoformat(start)
+            end_date = date.fromisoformat(end)
+        except ValueError:
+            # Invalid date format, default to today
+            today = date.today()
+            start_date = today
+            end_date = today
+
+    # Validate date range
+    if start_date > end_date:
+        start_date, end_date = end_date, start_date
+
+    # Max 90 days range
+    if (end_date - start_date).days > 90:
+        end_date = start_date + timedelta(days=90)
+
+    # Get data based on active tab
+    daily_sales = None
+    best_sellers = None
+
+    if tab == "daily-sales":
+        daily_sales = get_daily_sales_data(db, start_date, end_date)
+    elif tab == "best-sellers":
+        best_sellers = get_best_sellers_data(db, start_date, end_date)
+
+    return templates.TemplateResponse("admin/reports.html", {
+        "request": request,
+        "start_date": start_date.isoformat(),
+        "end_date": end_date.isoformat(),
+        "active_tab": tab,
+        "daily_sales": daily_sales,
+        "best_sellers": best_sellers
+    })
