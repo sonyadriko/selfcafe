@@ -4,6 +4,7 @@ import sys
 sys.path.insert(0, '/Users/sonyadriko/Projects/SelfCafe-Ordering-System')
 
 from app.database import SessionLocal
+import app.models  # ensure all models are registered
 from app.models.order import Order
 
 db = SessionLocal()
