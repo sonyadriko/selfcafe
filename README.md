@@ -18,6 +18,8 @@ Sistem pemesanan mandiri untuk coffee shop berbasis web.
 pip install -r requirements.txt
 ```
 
+> **Note:** `bcrypt` dipinned ke versi `3.2.2` karena `passlib 1.7.4` tidak kompatibel dengan `bcrypt >= 4.0` (akan muncul error `ValueError: password cannot be longer than 72 bytes`).
+
 ### 2. Configure database
 
 Copy `.env.example` to `.env` dan sesuaikan:
