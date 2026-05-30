@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse, Response
+from fastapi.responses import HTMLResponse, Response, JSONResponse
 from sqlalchemy.orm import Session
 import qrcode
 import io
@@ -15,6 +15,7 @@ from app.models.payment_method import PaymentMethod
 from app.dependencies import get_current_user, require_role
 from app.models.user import User, UserRole
 from app.services.auth_service import get_password_hash
+from app.services.table_settings import get_num_tables, set_num_tables
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
@@ -113,7 +114,7 @@ async def tables_page(
     request: Request,
     current_user: User = Depends(require_role("admin"))
 ):
-    num_tables = settings.NUM_TABLES
+    num_tables = get_num_tables()
     base_url = f"{request.url.scheme}://{request.url.netloc}"
 
     tables = []
@@ -126,8 +127,21 @@ async def tables_page(
 
     return templates.TemplateResponse("admin/tables.html", {
         "request": request,
-        "tables": tables
+        "tables": tables,
+        "num_tables": num_tables
     })
+
+@router.post("/tables/update-count")
+async def update_table_count(
+    request: Request,
+    current_user: User = Depends(require_role("admin"))
+):
+    body = await request.json()
+    num = body.get("num_tables")
+    if not isinstance(num, int) or num < 1 or num > 100:
+        raise HTTPException(status_code=400, detail="Jumlah meja harus antara 1 dan 100")
+    set_num_tables(num)
+    return JSONResponse({"success": True, "num_tables": num})
 
 @router.get("/users", response_class=HTMLResponse)
 async def users_page(
