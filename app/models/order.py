@@ -25,6 +25,7 @@ class Order(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     items = relationship("OrderItem", back_populates="order", cascade="all, delete-orphan")
+    cashier = relationship("User", foreign_keys=[user_id])
 
 class OrderItem(Base):
     __tablename__ = "order_items"

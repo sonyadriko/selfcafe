@@ -21,7 +21,6 @@ templates = Jinja2Templates(directory="app/templates")
 def get_daily_sales_data(db: Session, start_date: date, end_date: date) -> dict:
     """Query daily sales metrics for date range."""
 
-    # Query orders in date range with paid/completed status
     orders = db.query(Order).filter(
         func.date(Order.created_at) >= start_date,
         func.date(Order.created_at) <= end_date,
@@ -33,18 +32,31 @@ def get_daily_sales_data(db: Session, start_date: date, end_date: date) -> dict:
             "total_revenue": Decimal("0.00"),
             "order_count": 0,
             "average_order_value": Decimal("0.00"),
-            "date_range": {"start": start_date, "end": end_date}
+            "daily_breakdown": []
         }
 
     total_revenue = sum(order.total_amount for order in orders)
     order_count = len(orders)
     average_order_value = total_revenue / order_count if order_count > 0 else Decimal("0.00")
 
+    # Per-day breakdown
+    by_day = {}
+    current = start_date
+    while current <= end_date:
+        by_day[current.isoformat()] = {"date": current.isoformat(), "revenue": Decimal("0.00"), "order_count": 0}
+        current += timedelta(days=1)
+
+    for order in orders:
+        day = order.created_at.date().isoformat()
+        if day in by_day:
+            by_day[day]["revenue"] += order.total_amount
+            by_day[day]["order_count"] += 1
+
     return {
         "total_revenue": total_revenue,
         "order_count": order_count,
         "average_order_value": average_order_value,
-        "date_range": {"start": start_date, "end": end_date}
+        "daily_breakdown": list(by_day.values())
     }
 
 

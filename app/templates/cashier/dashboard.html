@@ -749,14 +749,8 @@ async function processPayment() {
         }
 
         showSuccess('Pembayaran berhasil!');
-
-        document.getElementById('orderStatus').textContent = 'Paid';
-        document.getElementById('orderStatus').className = 'order-status paid';
-        document.getElementById('payBtn').style.display = 'none';
-        document.getElementById('paymentMethodSection').style.display = 'none';
-        document.getElementById('completeBtn').style.display = 'block';
-
-        loadPendingOrders();
+        await loadPendingOrders();
+        setTimeout(() => clearOrder(), 800);
 
     } catch (err) {
         console.error('Payment error:', err);

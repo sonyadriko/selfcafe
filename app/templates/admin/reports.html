@@ -382,8 +382,8 @@ tr.top-item td:first-child {
         </div>
 
         {% if active_tab == 'daily-sales' %}
+        {% if daily_sales and daily_sales.order_count > 0 %}
         <div class="report-card">
-            {% if daily_sales %}
             <div class="metrics-row">
                 <div class="metric-box">
                     <p class="metric-value">Rp {{ "{:,.0f}".format(daily_sales.total_revenue) }}</p>
@@ -398,13 +398,44 @@ tr.top-item td:first-child {
                     <p class="metric-label">Rata-rata Pesanan</p>
                 </div>
             </div>
-            {% else %}
+
+            {% if daily_sales.daily_breakdown|length > 1 %}
+            <div class="chart-container">
+                <canvas id="dailySalesChart"></canvas>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="report-card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tanggal</th>
+                        <th>Jumlah Pesanan</th>
+                        <th style="text-align:right">Pendapatan</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for day in daily_sales.daily_breakdown %}
+                    <tr {% if day.order_count == 0 %}style="opacity:0.4"{% endif %}>
+                        <td>{{ day.date }}</td>
+                        <td>{{ day.order_count }}</td>
+                        <td style="text-align:right; font-weight:500">
+                            {% if day.order_count > 0 %}Rp {{ "{:,.0f}".format(day.revenue) }}{% else %}—{% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="report-card">
             <div class="empty-state">
                 <div class="empty-icon">📊</div>
                 <p>Tidak ada data untuk rentang tanggal yang dipilih</p>
             </div>
-            {% endif %}
         </div>
+        {% endif %}
         {% endif %}
 
         {% if active_tab == 'best-sellers' %}
@@ -489,13 +520,46 @@ function setRange(period) {
     document.getElementById('filterForm').submit();
 }
 
+{% if active_tab == 'daily-sales' and daily_sales and daily_sales.daily_breakdown|length > 1 %}
+new Chart(document.getElementById('dailySalesChart'), {
+    type: 'line',
+    data: {
+        labels: [{% for d in daily_sales.daily_breakdown %}"{{ d.date }}"{% if not loop.last %},{% endif %}{% endfor %}],
+        datasets: [{
+            label: 'Pendapatan',
+            data: [{% for d in daily_sales.daily_breakdown %}{{ d.revenue }}{% if not loop.last %},{% endif %}{% endfor %}],
+            borderColor: '#141413',
+            backgroundColor: 'rgba(20,20,19,0.06)',
+            borderWidth: 2,
+            pointRadius: 4,
+            pointBackgroundColor: '#141413',
+            fill: true,
+            tension: 0.3
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: { callback: v => 'Rp ' + v.toLocaleString('id-ID') },
+                grid: { color: 'rgba(0,0,0,0.04)' }
+            },
+            x: { grid: { display: false } }
+        }
+    }
+});
+{% endif %}
+
 function exportCSV() {
     {% if active_tab == 'daily-sales' and daily_sales %}
     const rows = [
-        ['Metrik', 'Nilai'],
-        ['Total Pendapatan', '{{ daily_sales.total_revenue }}'],
-        ['Jumlah Pesanan', '{{ daily_sales.order_count }}'],
-        ['Rata-rata Pesanan', '{{ daily_sales.average_order_value }}'],
+        ['Tanggal', 'Jumlah Pesanan', 'Pendapatan'],
+        {% for d in daily_sales.daily_breakdown %}
+        ['{{ d.date }}', '{{ d.order_count }}', '{{ d.revenue }}'],
+        {% endfor %}
     ];
     downloadCSV(rows, 'penjualan-harian-{{ start_date }}-{{ end_date }}.csv');
     {% elif active_tab == 'best-sellers' and best_sellers and best_sellers|length > 0 %}

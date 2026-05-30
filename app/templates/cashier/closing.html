@@ -305,6 +305,7 @@ tr:last-child td {
                     <tr>
                         <th>#</th>
                         <th>Meja</th>
+                        <th>Kasir</th>
                         <th>Metode</th>
                         <th>Status</th>
                         <th>Jam</th>
@@ -316,6 +317,7 @@ tr:last-child td {
                     <tr>
                         <td style="color:var(--color-slate-gray)">{{ order.id }}</td>
                         <td>Meja {{ order.table_number }}</td>
+                        <td>{{ order.cashier.username if order.cashier else '—' }}</td>
                         <td>{{ order.payment_method or '—' }}</td>
                         <td>
                             <span class="status-badge {{ order.status.value }}">

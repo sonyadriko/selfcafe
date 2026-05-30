@@ -13,7 +13,8 @@ from app.models.order import Order, OrderStatus
 from app.models.menu import Menu
 from app.models.payment_method import PaymentMethod
 from app.dependencies import get_current_user, require_role
-from app.models.user import User
+from app.models.user import User, UserRole
+from app.services.auth_service import get_password_hash
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
@@ -127,6 +128,91 @@ async def tables_page(
         "request": request,
         "tables": tables
     })
+
+@router.get("/users", response_class=HTMLResponse)
+async def users_page(
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("admin"))
+):
+    users = db.query(User).order_by(User.role, User.username).all()
+    return templates.TemplateResponse("admin/users.html", {
+        "request": request,
+        "users": users,
+        "current_user": current_user,
+        "roles": [r.value for r in UserRole]
+    })
+
+class UserCreate(BaseModel):
+    username: str
+    full_name: str
+    role: str
+    password: str
+
+class UserUpdate(BaseModel):
+    username: str
+    full_name: str
+    role: str
+    password: Optional[str] = None
+
+@router.post("/users")
+async def create_user(
+    data: UserCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("admin"))
+):
+    if db.query(User).filter(User.username == data.username).first():
+        raise HTTPException(status_code=400, detail="Username sudah digunakan")
+    if data.role not in [r.value for r in UserRole]:
+        raise HTTPException(status_code=400, detail="Role tidak valid")
+    user = User(
+        username=data.username,
+        full_name=data.full_name,
+        role=data.role,
+        password_hash=get_password_hash(data.password)
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return {"id": user.id, "username": user.username, "full_name": user.full_name, "role": user.role}
+
+@router.put("/users/{user_id}")
+async def update_user(
+    user_id: int,
+    data: UserUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("admin"))
+):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User tidak ditemukan")
+    existing = db.query(User).filter(User.username == data.username, User.id != user_id).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Username sudah digunakan")
+    if data.role not in [r.value for r in UserRole]:
+        raise HTTPException(status_code=400, detail="Role tidak valid")
+    user.username = data.username
+    user.full_name = data.full_name
+    user.role = data.role
+    if data.password:
+        user.password_hash = get_password_hash(data.password)
+    db.commit()
+    return {"id": user.id, "username": user.username, "full_name": user.full_name, "role": user.role}
+
+@router.delete("/users/{user_id}")
+async def delete_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("admin"))
+):
+    if user_id == current_user.id:
+        raise HTTPException(status_code=400, detail="Tidak bisa menghapus akun sendiri")
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User tidak ditemukan")
+    db.delete(user)
+    db.commit()
+    return {"success": True}
 
 @router.get("/payment-methods", response_class=HTMLResponse)
 async def payment_methods_page(

@@ -1,0 +1,492 @@
+{% extends "base.html" %}
+
+{% block title %}Manajemen User - Admin{% endblock %}
+
+{% block extra_head %}
+<style>
+.users-container {
+    min-height: 100vh;
+    background: var(--color-canvas-cream);
+}
+
+.main-content {
+    margin-left: 280px;
+    padding: 48px 64px;
+    min-height: 100vh;
+}
+
+@media (max-width: 768px) {
+    .main-content { margin-left: 0; padding: 24px; padding-top: 80px; }
+}
+
+.page-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 32px;
+}
+
+.page-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-coffee-medium);
+    margin-bottom: 12px;
+}
+
+.page-eyebrow-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--color-light-signal-orange);
+    border-radius: 50%;
+}
+
+.page-title {
+    font-size: 40px;
+    font-weight: 500;
+    color: var(--color-ink-black);
+    letter-spacing: -0.02em;
+    margin: 0;
+}
+
+.btn-add {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 22px;
+    background: var(--color-ink-black);
+    color: var(--color-white);
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: var(--font-body);
+    transition: all 0.2s ease;
+}
+
+.btn-add:hover { background: #2a2a2a; transform: translateY(-1px); }
+
+.users-card {
+    background: var(--color-white);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+}
+
+.user-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 28px;
+    border-bottom: 1px solid var(--color-canvas-cream);
+    transition: background 0.15s ease;
+}
+
+.user-row:last-child { border-bottom: none; }
+.user-row:hover { background: var(--color-canvas-cream); }
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.user-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--color-ink-black);
+    color: var(--color-white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.user-avatar.kasir { background: var(--color-coffee-medium); }
+
+.user-name {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--color-ink-black);
+}
+
+.user-username {
+    font-size: 13px;
+    color: var(--color-slate-gray);
+    margin-top: 2px;
+}
+
+.role-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: var(--radius-pill);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.role-badge.admin { background: rgba(20,20,19,0.08); color: var(--color-ink-black); }
+.role-badge.kasir { background: rgba(111,78,55,0.1); color: var(--color-coffee-medium); }
+
+.user-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: var(--font-body);
+    transition: all 0.15s ease;
+    border: 1.5px solid transparent;
+}
+
+.btn-edit {
+    background: var(--color-canvas-cream);
+    color: var(--color-ink-black);
+    border-color: rgba(20,20,19,0.1);
+}
+
+.btn-edit:hover { border-color: var(--color-ink-black); }
+
+.btn-delete {
+    background: rgba(220,38,38,0.06);
+    color: #DC2626;
+    border-color: rgba(220,38,38,0.15);
+}
+
+.btn-delete:hover { background: rgba(220,38,38,0.12); }
+.btn-delete:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+    z-index: 999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-overlay.show { display: flex; }
+
+.modal {
+    background: var(--color-white);
+    border-radius: var(--radius-xl);
+    padding: 32px;
+    width: 100%;
+    max-width: 460px;
+    box-shadow: var(--shadow-elevated);
+    animation: modalIn 0.2s ease;
+}
+
+@keyframes modalIn {
+    from { opacity: 0; transform: scale(0.96) translateY(8px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modal-title {
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--color-ink-black);
+    margin-bottom: 24px;
+    letter-spacing: -0.01em;
+}
+
+.modal-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.modal-field { display: flex; flex-direction: column; gap: 6px; }
+.modal-field.full { grid-column: 1 / -1; }
+
+.modal-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-charcoal);
+}
+
+.modal-input, .modal-select {
+    padding: 11px 14px;
+    border: 1.5px solid rgba(20,20,19,0.12);
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-family: var(--font-body);
+    color: var(--color-ink-black);
+    outline: none;
+    transition: border-color 0.2s ease;
+    background: var(--color-white);
+}
+
+.modal-input:focus, .modal-select:focus { border-color: var(--color-ink-black); }
+
+.modal-hint {
+    font-size: 12px;
+    color: var(--color-slate-gray);
+    margin-top: 2px;
+}
+
+.modal-error {
+    font-size: 13px;
+    color: #DC2626;
+    margin-top: 12px;
+    display: none;
+}
+
+.modal-footer {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 24px;
+}
+
+.btn-cancel {
+    padding: 10px 20px;
+    border-radius: var(--radius-md);
+    border: 1.5px solid rgba(20,20,19,0.15);
+    background: transparent;
+    color: var(--color-slate-gray);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: var(--font-body);
+}
+
+.btn-cancel:hover { border-color: var(--color-ink-black); color: var(--color-ink-black); }
+
+.btn-save {
+    padding: 10px 24px;
+    border-radius: var(--radius-md);
+    background: var(--color-ink-black);
+    color: var(--color-white);
+    border: none;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: var(--font-body);
+    transition: background 0.2s ease;
+}
+
+.btn-save:hover { background: #2a2a2a; }
+.btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.you-badge {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--color-slate-gray);
+    background: var(--color-canvas-cream);
+    padding: 2px 8px;
+    border-radius: var(--radius-pill);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="users-container">
+    {% include "admin/sidebar.html" %}
+
+    <main class="main-content">
+        <div class="page-header">
+            <div>
+                <div class="page-eyebrow">
+                    <span class="page-eyebrow-dot"></span>
+                    <span>Pengaturan</span>
+                </div>
+                <h1 class="page-title">Manajemen User</h1>
+            </div>
+            <button class="btn-add" onclick="openModal()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Tambah User
+            </button>
+        </div>
+
+        <div class="users-card">
+            {% for user in users %}
+            <div class="user-row" id="row-{{ user.id }}">
+                <div class="user-info">
+                    <div class="user-avatar {{ user.role.value }}">{{ user.full_name[0].upper() }}</div>
+                    <div>
+                        <div class="user-name">
+                            {{ user.full_name }}
+                            {% if user.id == current_user.id %}
+                            <span class="you-badge">Anda</span>
+                            {% endif %}
+                        </div>
+                        <div class="user-username">@{{ user.username }}</div>
+                    </div>
+                </div>
+                <div style="display:flex; align-items:center; gap:16px;">
+                    <span class="role-badge {{ user.role.value }}">{{ user.role.value }}</span>
+                    <div class="user-actions">
+                        <button class="action-btn btn-edit"
+                                onclick="openModal({{ user.id }}, '{{ user.username }}', '{{ user.full_name }}', '{{ user.role.value }}')">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                            Edit
+                        </button>
+                        <button class="action-btn btn-delete"
+                                {% if user.id == current_user.id %}disabled title="Tidak bisa menghapus akun sendiri"{% endif %}
+                                onclick="deleteUser({{ user.id }}, '{{ user.full_name }}')">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+        <h2 class="modal-title" id="modalTitle">Tambah User</h2>
+        <div class="modal-grid">
+            <div class="modal-field">
+                <label class="modal-label">Username</label>
+                <input type="text" id="fieldUsername" class="modal-input" placeholder="kasir01" autocomplete="off">
+            </div>
+            <div class="modal-field">
+                <label class="modal-label">Role</label>
+                <select id="fieldRole" class="modal-select">
+                    {% for role in roles %}
+                    <option value="{{ role }}">{{ role|capitalize }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="modal-field full">
+                <label class="modal-label">Nama Lengkap</label>
+                <input type="text" id="fieldFullName" class="modal-input" placeholder="Budi Santoso" autocomplete="off">
+            </div>
+            <div class="modal-field full" id="passwordField">
+                <label class="modal-label">Password</label>
+                <input type="password" id="fieldPassword" class="modal-input" placeholder="Minimal 6 karakter" autocomplete="new-password">
+                <span class="modal-hint" id="passwordHint"></span>
+            </div>
+        </div>
+        <p class="modal-error" id="modalError"></p>
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeModal()">Batal</button>
+            <button class="btn-save" id="saveBtn" onclick="saveUser()">Simpan</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let editingId = null;
+
+function openModal(id = null, username = '', fullName = '', role = 'kasir') {
+    editingId = id;
+    document.getElementById('modalTitle').textContent = id ? 'Edit User' : 'Tambah User';
+    document.getElementById('fieldUsername').value = username;
+    document.getElementById('fieldFullName').value = fullName;
+    document.getElementById('fieldRole').value = role;
+    document.getElementById('fieldPassword').value = '';
+    document.getElementById('passwordHint').textContent = id ? 'Kosongkan jika tidak ingin mengubah password' : '';
+    document.getElementById('modalError').style.display = 'none';
+    document.getElementById('modalOverlay').classList.add('show');
+    setTimeout(() => document.getElementById('fieldUsername').focus(), 100);
+}
+
+function closeModal(e) {
+    if (e && e.target !== document.getElementById('modalOverlay')) return;
+    document.getElementById('modalOverlay').classList.remove('show');
+    editingId = null;
+}
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeModal();
+});
+
+async function saveUser() {
+    const username = document.getElementById('fieldUsername').value.trim();
+    const fullName = document.getElementById('fieldFullName').value.trim();
+    const role = document.getElementById('fieldRole').value;
+    const password = document.getElementById('fieldPassword').value;
+
+    if (!username || !fullName) {
+        showError('Username dan nama lengkap wajib diisi');
+        return;
+    }
+    if (!editingId && !password) {
+        showError('Password wajib diisi untuk user baru');
+        return;
+    }
+    if (password && password.length < 6) {
+        showError('Password minimal 6 karakter');
+        return;
+    }
+
+    const saveBtn = document.getElementById('saveBtn');
+    saveBtn.disabled = true;
+
+    const body = { username, full_name: fullName, role };
+    if (password) body.password = password;
+
+    const url = editingId ? `/admin/users/${editingId}` : '/admin/users';
+    const method = editingId ? 'PUT' : 'POST';
+
+    try {
+        const res = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+            showError(data.detail || 'Gagal menyimpan');
+            return;
+        }
+
+        document.getElementById('modalOverlay').classList.remove('show');
+        location.reload();
+    } finally {
+        saveBtn.disabled = false;
+    }
+}
+
+function showError(msg) {
+    const el = document.getElementById('modalError');
+    el.textContent = msg;
+    el.style.display = 'block';
+}
+
+async function deleteUser(id, name) {
+    if (!confirm(`Hapus user "${name}"? Tindakan ini tidak bisa dibatalkan.`)) return;
+    const res = await fetch(`/admin/users/${id}`, { method: 'DELETE' });
+    if (res.ok) {
+        const row = document.getElementById(`row-${id}`);
+        row.style.opacity = '0';
+        row.style.transition = 'opacity 0.2s ease';
+        setTimeout(() => row.remove(), 200);
+    } else {
+        const data = await res.json();
+        alert(data.detail || 'Gagal menghapus user');
+    }
+}
+</script>
+{% endblock %}

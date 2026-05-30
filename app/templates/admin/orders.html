@@ -693,6 +693,9 @@
                             {% if order.payment_method %}
                             <span class="payment-method-badge">💳 {{ order.payment_method }}</span>
                             {% endif %}
+                            {% if order.cashier %}
+                            <span class="payment-method-badge" style="background:rgba(99,102,241,0.08); color:#4F46E5;">👤 {{ order.cashier.username }}</span>
+                            {% endif %}
                         </div>
 
                         <div class="order-card-actions">

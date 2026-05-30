@@ -97,6 +97,7 @@ async def process_payment(
         )
 
     order.status = OrderStatus.PAID
+    order.user_id = current_user.id
     if pay_data.payment_method:
         order.payment_method = pay_data.payment_method
     db.commit()
