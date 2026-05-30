@@ -5,8 +5,13 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
+from sqlalchemy import func
+from pydantic import BaseModel
+from typing import Optional
+from datetime import date
 from app.database import get_db
 from app.models.order import Order, OrderStatus
+from app.models.payment_method import PaymentMethod
 from app.models.user import User
 from app.schemas.order import CashierScanRequest, CashierScanResponse, OrderItemResponse
 from app.dependencies import get_current_user, require_role
@@ -19,12 +24,16 @@ templates = Jinja2Templates(directory="app/templates")
 @router.get("/cashier", response_class=HTMLResponse)
 async def cashier_dashboard(
     request: Request,
+    db: Session = Depends(get_db),
     current_user: User = Depends(require_role("admin", "kasir"))
 ):
-    """Cashier dashboard for QR scanning."""
+    payment_methods = db.query(PaymentMethod).filter(
+        PaymentMethod.is_active == True
+    ).order_by(PaymentMethod.name).all()
     return templates.TemplateResponse("cashier/dashboard.html", {
         "request": request,
-        "user": current_user
+        "user": current_user,
+        "payment_methods": payment_methods
     })
 
 
@@ -66,17 +75,16 @@ async def scan_order(
     )
 
 
+class PayRequest(BaseModel):
+    payment_method: Optional[str] = None
+
 @router.put("/api/cashier/pay/{order_id}")
 async def process_payment(
     order_id: int,
+    pay_data: PayRequest,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_role("admin", "kasir"))
 ):
-    """
-    Process payment for an order.
-
-    Updates order status from PENDING to PAID.
-    """
     order = db.query(Order).filter(Order.id == order_id).first()
 
     if not order:
@@ -89,6 +97,8 @@ async def process_payment(
         )
 
     order.status = OrderStatus.PAID
+    if pay_data.payment_method:
+        order.payment_method = pay_data.payment_method
     db.commit()
 
     return {
@@ -130,25 +140,68 @@ async def complete_order(
     }
 
 
+@router.get("/cashier/closing", response_class=HTMLResponse)
+async def cashier_closing(
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("admin", "kasir")),
+    selected_date: Optional[str] = None
+):
+    try:
+        from datetime import datetime
+        target = datetime.strptime(selected_date, "%Y-%m-%d").date() if selected_date else date.today()
+    except ValueError:
+        target = date.today()
+
+    orders = db.query(Order).filter(
+        func.date(Order.created_at) == target,
+        Order.status.in_([OrderStatus.PAID, OrderStatus.COMPLETED])
+    ).order_by(Order.created_at).all()
+
+    total_revenue = sum(float(o.total_amount) for o in orders)
+
+    breakdown = {}
+    for o in orders:
+        key = o.payment_method or "Tidak Tercatat"
+        breakdown[key] = breakdown.get(key, 0) + float(o.total_amount)
+
+    return templates.TemplateResponse("cashier/closing.html", {
+        "request": request,
+        "user": current_user,
+        "orders": orders,
+        "total_revenue": total_revenue,
+        "breakdown": breakdown,
+        "selected_date": target.strftime("%Y-%m-%d"),
+        "display_date": target.strftime("%d %B %Y"),
+        "order_count": len(orders)
+    })
+
+
 @router.get("/api/cashier/orders")
-async def list_pending_orders(
+async def list_active_orders(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_role("admin", "kasir"))
 ):
-    """List all pending orders for cashier view."""
-    orders = db.query(Order).filter(Order.status == OrderStatus.PENDING).order_by(Order.created_at.desc()).all()
+    def serialize(order):
+        return {
+            "id": order.id,
+            "table_number": order.table_number,
+            "total_amount": float(order.total_amount),
+            "status": order.status.value,
+            "created_at": order.created_at.isoformat(),
+            "tracking_token": order.tracking_token,
+            "item_count": len(order.items)
+        }
+
+    pending = db.query(Order).filter(
+        Order.status == OrderStatus.PENDING
+    ).order_by(Order.created_at.desc()).all()
+
+    paid = db.query(Order).filter(
+        Order.status == OrderStatus.PAID
+    ).order_by(Order.created_at.desc()).all()
 
     return {
-        "orders": [
-            {
-                "id": order.id,
-                "table_number": order.table_number,
-                "total_amount": float(order.total_amount),
-                "status": order.status.value,
-                "created_at": order.created_at.isoformat(),
-                "tracking_token": order.tracking_token,
-                "item_count": len(order.items)
-            }
-            for order in orders
-        ]
+        "pending": [serialize(o) for o in pending],
+        "paid": [serialize(o) for o in paid]
     }

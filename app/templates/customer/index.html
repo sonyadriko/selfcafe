@@ -614,6 +614,37 @@
     color: var(--color-slate-gray);
 }
 
+/* Order Success Toast */
+.order-toast {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--color-ink-black);
+    color: var(--color-white);
+    padding: 16px 28px;
+    border-radius: var(--radius-pill);
+    font-size: 15px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    z-index: 9999;
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    white-space: nowrap;
+}
+
+.order-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.order-toast-icon {
+    font-size: 20px;
+}
+
 /* Responsive */
 @media (min-width: 768px) {
     .menu-grid {
@@ -747,6 +778,12 @@
             </div>
         </div>
     </section>
+</div>
+
+<!-- Order Success Toast -->
+<div class="order-toast" id="orderToast">
+    <span class="order-toast-icon">✓</span>
+    <span>Pesanan berhasil dibuat!</span>
 </div>
 
 <!-- Cart Overlay -->
@@ -984,7 +1021,11 @@ async function placeOrder() {
 
         if (response.ok) {
             const data = await response.json();
-            window.location.href = `/customer/order/success/${data.tracking_token}`;
+            const toast = document.getElementById('orderToast');
+            toast.classList.add('show');
+            setTimeout(() => {
+                window.location.href = `/customer/order/success/${data.tracking_token}`;
+            }, 1500);
         } else {
             throw new Error('Gagal membuat pesanan');
         }

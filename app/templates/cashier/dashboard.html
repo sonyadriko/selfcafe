@@ -317,6 +317,30 @@
     cursor: not-allowed;
 }
 
+.pm-btn {
+    padding: 8px 16px;
+    border-radius: 999px;
+    border: 1.5px solid rgba(20,20,19,0.15);
+    background: white;
+    color: #696969;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s ease;
+}
+
+.pm-btn:hover {
+    border-color: var(--color-ink-black);
+    color: var(--color-ink-black);
+}
+
+.pm-btn.selected {
+    background: var(--color-ink-black);
+    border-color: var(--color-ink-black);
+    color: white;
+}
+
 .btn-complete {
     background: #059669;
     color: var(--color-white);
@@ -350,10 +374,20 @@
 }
 
 .pending-orders-title {
-    font-size: 16px;
-    font-weight: 500;
-    color: var(--color-ink-black);
-    margin-bottom: 16px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-slate-gray);
+    margin-bottom: 12px;
+}
+
+.orders-section {
+    margin-bottom: 28px;
+}
+
+.paid-item {
+    border-left: 3px solid #3B82F6;
 }
 
 .pending-list {
@@ -465,9 +499,11 @@
             </div>
             <div class="user-section">
                 <span class="user-name">{{ user.full_name }}</span>
-                <form action="/auth/logout" method="post">
-                    <button type="submit" class="logout-btn">Keluar</button>
-                </form>
+                <a href="/cashier/closing" class="logout-btn" style="background:var(--color-coffee-medium); margin-right:8px; text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    Closing
+                </a>
+                <a href="/auth/logout" class="logout-btn" style="text-decoration:none; display:inline-flex; align-items:center;">Keluar</a>
             </div>
         </div>
     </header>
@@ -523,16 +559,40 @@
                 <span class="summary-value" id="totalAmount">Rp 0</span>
             </div>
 
+            <div id="paymentMethodSection" style="display:none; margin-bottom: 12px;">
+                <label style="display:block; font-size:11px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:#696969; margin-bottom:8px;">Metode Pembayaran</label>
+                <div style="display:flex; flex-wrap:wrap; gap:8px;" id="paymentMethodBtns">
+                    {% if payment_methods %}
+                        {% for pm in payment_methods %}
+                        <button type="button"
+                                class="pm-btn"
+                                data-method="{{ pm.name }}"
+                                onclick="selectPaymentMethod(this)">
+                            {{ pm.name }}
+                        </button>
+                        {% endfor %}
+                    {% else %}
+                        <p style="font-size:13px; color:#696969;">Belum ada metode pembayaran aktif. Tambahkan di <a href="/admin/payment-methods">pengaturan</a>.</p>
+                    {% endif %}
+                </div>
+            </div>
+
             <div class="order-actions" id="orderActions">
-                <button class="action-btn btn-pay" id="payBtn" onclick="processPayment()">Proses Pembayaran</button>
+                <button class="action-btn btn-pay" id="payBtn" onclick="processPayment()" {% if not payment_methods %}disabled{% endif %}>Proses Pembayaran</button>
                 <button class="action-btn btn-complete" id="completeBtn" onclick="completeOrder()" style="display: none;">Selesaikan Pesanan</button>
                 <button class="btn-clear" onclick="clearOrder()">Tutup</button>
             </div>
         </div>
 
+        <!-- Paid Orders (waiting to complete) -->
+        <section class="pending-orders orders-section" id="paidOrdersSection" style="display:none;">
+            <h3 class="pending-orders-title">Sudah Dibayar — Belum Diselesaikan</h3>
+            <div class="pending-list" id="paidList"></div>
+        </section>
+
         <!-- Pending Orders -->
-        <section class="pending-orders" id="pendingOrdersSection">
-            <h3 class="pending-orders-title">Pesanan Menunggu Pembayaran</h3>
+        <section class="pending-orders orders-section">
+            <h3 class="pending-orders-title">Menunggu Pembayaran</h3>
             <div class="pending-list" id="pendingList">
                 <div class="empty-state">
                     <div class="empty-icon">📋</div>
@@ -548,9 +608,19 @@
 let currentOrderId = null;
 let currentToken = null;
 
+// Event delegation — works even after list re-render
+document.getElementById('pendingList').addEventListener('click', e => {
+    const item = e.target.closest('[data-token]');
+    if (item) loadOrder(item.dataset.token);
+});
+document.getElementById('paidList').addEventListener('click', e => {
+    const item = e.target.closest('[data-token]');
+    if (item) loadOrder(item.dataset.token);
+});
+
 // Load pending orders on page load
 loadPendingOrders();
-setInterval(loadPendingOrders, 15000); // Refresh every 15s
+setInterval(loadPendingOrders, 15000);
 
 // Auto-focus scan input
 document.getElementById('scanInput').addEventListener('keypress', function(e) {
@@ -628,20 +698,35 @@ function displayOrder(order) {
     const payBtn = document.getElementById('payBtn');
     const completeBtn = document.getElementById('completeBtn');
 
+    const pmSection = document.getElementById('paymentMethodSection');
     if (order.status === 'pending') {
         payBtn.style.display = 'block';
+        payBtn.disabled = true;
         completeBtn.style.display = 'none';
+        pmSection.style.display = 'block';
     } else if (order.status === 'paid') {
         payBtn.style.display = 'none';
         completeBtn.style.display = 'block';
+        pmSection.style.display = 'none';
     } else {
         payBtn.style.display = 'none';
         completeBtn.style.display = 'none';
+        pmSection.style.display = 'none';
     }
+}
+
+let selectedPaymentMethod = null;
+
+function selectPaymentMethod(btn) {
+    document.querySelectorAll('.pm-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedPaymentMethod = btn.dataset.method;
+    document.getElementById('payBtn').disabled = false;
 }
 
 async function processPayment() {
     if (!currentOrderId) return;
+    if (!selectedPaymentMethod) return;
 
     const payBtn = document.getElementById('payBtn');
     payBtn.disabled = true;
@@ -649,22 +734,26 @@ async function processPayment() {
 
     try {
         const response = await fetch(`/api/cashier/pay/${currentOrderId}`, {
-            method: 'PUT'
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ payment_method: selectedPaymentMethod })
         });
 
         const data = await response.json();
 
         if (!response.ok) {
             showError(data.detail || 'Gagal memproses pembayaran');
+            payBtn.disabled = false;
+            payBtn.textContent = 'Proses Pembayaran';
             return;
         }
 
         showSuccess('Pembayaran berhasil!');
 
-        // Update order status display
         document.getElementById('orderStatus').textContent = 'Paid';
         document.getElementById('orderStatus').className = 'order-status paid';
         document.getElementById('payBtn').style.display = 'none';
+        document.getElementById('paymentMethodSection').style.display = 'none';
         document.getElementById('completeBtn').style.display = 'block';
 
         loadPendingOrders();
@@ -672,7 +761,6 @@ async function processPayment() {
     } catch (err) {
         console.error('Payment error:', err);
         showError('Gagal memproses pembayaran. Silakan coba lagi.');
-    } finally {
         payBtn.disabled = false;
         payBtn.textContent = 'Proses Pembayaran';
     }
@@ -694,17 +782,18 @@ async function completeOrder() {
 
         if (!response.ok) {
             showError(data.detail || 'Gagal menyelesaikan pesanan');
+            completeBtn.disabled = false;
+            completeBtn.textContent = 'Selesaikan Pesanan';
             return;
         }
 
         showSuccess('Pesanan selesai!');
-        clearOrder();
-        loadPendingOrders();
+        await loadPendingOrders();
+        setTimeout(() => clearOrder(), 800);
 
     } catch (err) {
         console.error('Complete error:', err);
         showError('Gagal menyelesaikan pesanan. Silakan coba lagi.');
-    } finally {
         completeBtn.disabled = false;
         completeBtn.textContent = 'Selesaikan Pesanan';
     }
@@ -713,6 +802,9 @@ async function completeOrder() {
 function clearOrder() {
     currentOrderId = null;
     currentToken = null;
+    selectedPaymentMethod = null;
+    document.querySelectorAll('.pm-btn').forEach(b => b.classList.remove('selected'));
+    document.getElementById('paymentMethodSection').style.display = 'none';
     document.getElementById('orderCard').classList.remove('show');
     clearMessages();
     document.getElementById('scanInput').focus();
@@ -724,30 +816,45 @@ async function loadPendingOrders() {
         const data = await response.json();
 
         const pendingList = document.getElementById('pendingList');
+        const paidList = document.getElementById('paidList');
+        const paidSection = document.getElementById('paidOrdersSection');
 
-        if (data.orders.length === 0) {
+        // Pending
+        if (data.pending.length === 0) {
             pendingList.innerHTML = `
                 <div class="empty-state">
                     <div class="empty-icon">📋</div>
                     <p class="empty-title">Tidak ada pesanan pending</p>
                     <p class="empty-text">Pesanan baru akan muncul di sini</p>
-                </div>
-            `;
-            return;
+                </div>`;
+        } else {
+            pendingList.innerHTML = data.pending.map(order => `
+                <div class="pending-item" data-token="${order.tracking_token}">
+                    <div class="pending-info">
+                        <span class="pending-table">Meja ${order.table_number}</span>
+                        <span class="pending-time">${formatTime(order.created_at)}</span>
+                    </div>
+                    <span class="pending-total">Rp ${parseInt(order.total_amount).toLocaleString('id-ID')}</span>
+                </div>`).join('');
         }
 
-        pendingList.innerHTML = data.orders.map(order => `
-            <div class="pending-item" onclick="loadOrder('${order.tracking_token}')">
-                <div class="pending-info">
-                    <span class="pending-table">Meja ${order.table_number}</span>
-                    <span class="pending-time">${formatTime(order.created_at)}</span>
-                </div>
-                <span class="pending-total">Rp ${parseInt(order.total_amount).toLocaleString('id-ID')}</span>
-            </div>
-        `).join('');
+        // Paid
+        if (data.paid.length > 0) {
+            paidSection.style.display = 'block';
+            paidList.innerHTML = data.paid.map(order => `
+                <div class="pending-item paid-item" data-token="${order.tracking_token}">
+                    <div class="pending-info">
+                        <span class="pending-table">Meja ${order.table_number}</span>
+                        <span class="pending-time">${formatTime(order.created_at)}</span>
+                    </div>
+                    <span class="pending-total">Rp ${parseInt(order.total_amount).toLocaleString('id-ID')}</span>
+                </div>`).join('');
+        } else {
+            paidSection.style.display = 'none';
+        }
 
     } catch (err) {
-        console.error('Failed to load pending orders:', err);
+        console.error('Failed to load orders:', err);
     }
 }
 

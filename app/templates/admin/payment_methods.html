@@ -1,0 +1,499 @@
+{% extends "base.html" %}
+
+{% block title %}Metode Pembayaran - Admin{% endblock %}
+
+{% block extra_head %}
+<style>
+.pm-container {
+    min-height: 100vh;
+    background: var(--color-canvas-cream);
+}
+
+.main-content {
+    margin-left: 280px;
+    padding: 48px 64px;
+    min-height: 100vh;
+}
+
+@media (max-width: 768px) {
+    .main-content { margin-left: 0; padding: 24px; padding-top: 80px; }
+}
+
+.page-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 32px;
+}
+
+.page-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-coffee-medium);
+    margin-bottom: 12px;
+}
+
+.page-eyebrow-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--color-light-signal-orange);
+    border-radius: 50%;
+}
+
+.page-title {
+    font-size: 40px;
+    font-weight: 500;
+    color: var(--color-ink-black);
+    letter-spacing: -0.02em;
+    margin: 0;
+}
+
+.btn-add {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 22px;
+    background: var(--color-ink-black);
+    color: var(--color-white);
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: var(--font-body);
+    transition: all 0.2s ease;
+}
+
+.btn-add:hover {
+    background: #2a2a2a;
+    transform: translateY(-1px);
+}
+
+.methods-card {
+    background: var(--color-white);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+}
+
+.methods-empty {
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--color-slate-gray);
+}
+
+.methods-empty-icon {
+    font-size: 40px;
+    opacity: 0.3;
+    margin-bottom: 12px;
+}
+
+.method-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 28px;
+    border-bottom: 1px solid var(--color-canvas-cream);
+    transition: background 0.15s ease;
+}
+
+.method-row:last-child {
+    border-bottom: none;
+}
+
+.method-row:hover {
+    background: var(--color-canvas-cream);
+}
+
+.method-info {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.method-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--color-canvas-cream);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.method-name {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--color-ink-black);
+}
+
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: var(--radius-pill);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-pill.active {
+    background: rgba(5, 150, 105, 0.08);
+    color: #059669;
+}
+
+.status-pill.inactive {
+    background: rgba(0,0,0,0.06);
+    color: var(--color-slate-gray);
+}
+
+.method-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: var(--font-body);
+    transition: all 0.15s ease;
+    border: 1.5px solid transparent;
+}
+
+.btn-edit {
+    background: var(--color-canvas-cream);
+    color: var(--color-ink-black);
+    border-color: rgba(20,20,19,0.1);
+}
+
+.btn-edit:hover {
+    border-color: var(--color-ink-black);
+}
+
+.btn-toggle-active {
+    background: rgba(5,150,105,0.08);
+    color: #059669;
+    border-color: rgba(5,150,105,0.2);
+}
+
+.btn-toggle-active:hover {
+    background: rgba(5,150,105,0.15);
+}
+
+.btn-toggle-inactive {
+    background: rgba(0,0,0,0.05);
+    color: var(--color-slate-gray);
+    border-color: rgba(0,0,0,0.1);
+}
+
+.btn-toggle-inactive:hover {
+    background: rgba(0,0,0,0.1);
+    color: var(--color-ink-black);
+}
+
+.btn-delete {
+    background: rgba(220,38,38,0.06);
+    color: #DC2626;
+    border-color: rgba(220,38,38,0.15);
+}
+
+.btn-delete:hover {
+    background: rgba(220,38,38,0.12);
+}
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+    z-index: 999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-overlay.show {
+    display: flex;
+}
+
+.modal {
+    background: var(--color-white);
+    border-radius: var(--radius-xl);
+    padding: 32px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: var(--shadow-elevated);
+    animation: modalIn 0.2s ease;
+}
+
+@keyframes modalIn {
+    from { opacity: 0; transform: scale(0.96) translateY(8px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modal-title {
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--color-ink-black);
+    margin-bottom: 24px;
+    letter-spacing: -0.01em;
+}
+
+.modal-field {
+    margin-bottom: 20px;
+}
+
+.modal-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-charcoal);
+    margin-bottom: 8px;
+}
+
+.modal-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1.5px solid rgba(20,20,19,0.12);
+    border-radius: var(--radius-md);
+    font-size: 15px;
+    font-family: var(--font-body);
+    color: var(--color-ink-black);
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.modal-input:focus {
+    border-color: var(--color-ink-black);
+}
+
+.modal-error {
+    font-size: 13px;
+    color: #DC2626;
+    margin-top: 6px;
+    display: none;
+}
+
+.modal-footer {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 24px;
+}
+
+.btn-cancel {
+    padding: 10px 20px;
+    border-radius: var(--radius-md);
+    border: 1.5px solid rgba(20,20,19,0.15);
+    background: transparent;
+    color: var(--color-slate-gray);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: var(--font-body);
+}
+
+.btn-cancel:hover {
+    border-color: var(--color-ink-black);
+    color: var(--color-ink-black);
+}
+
+.btn-save {
+    padding: 10px 24px;
+    border-radius: var(--radius-md);
+    background: var(--color-ink-black);
+    color: var(--color-white);
+    border: none;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: var(--font-body);
+    transition: background 0.2s ease;
+}
+
+.btn-save:hover { background: #2a2a2a; }
+.btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="pm-container">
+    {% include "admin/sidebar.html" %}
+
+    <main class="main-content">
+        <div class="page-header">
+            <div>
+                <div class="page-eyebrow">
+                    <span class="page-eyebrow-dot"></span>
+                    <span>Pengaturan</span>
+                </div>
+                <h1 class="page-title">Metode Pembayaran</h1>
+            </div>
+            <button class="btn-add" onclick="openModal()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Tambah Metode
+            </button>
+        </div>
+
+        <div class="methods-card" id="methodsList">
+            {% if methods %}
+                {% for m in methods %}
+                <div class="method-row" id="row-{{ m.id }}">
+                    <div class="method-info">
+                        <div class="method-icon">💳</div>
+                        <div>
+                            <div class="method-name" id="name-{{ m.id }}">{{ m.name }}</div>
+                            <span class="status-pill {% if m.is_active %}active{% else %}inactive{% endif %}" id="pill-{{ m.id }}">
+                                {% if m.is_active %}● Aktif{% else %}○ Nonaktif{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="method-actions">
+                        <button class="action-btn btn-edit" onclick="openModal({{ m.id }}, '{{ m.name }}')">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                            Edit
+                        </button>
+                        <button class="action-btn {% if m.is_active %}btn-toggle-active{% else %}btn-toggle-inactive{% endif %}"
+                                id="toggle-{{ m.id }}"
+                                onclick="toggleMethod({{ m.id }}, {{ 'true' if m.is_active else 'false' }})">
+                            {% if m.is_active %}Nonaktifkan{% else %}Aktifkan{% endif %}
+                        </button>
+                        <button class="action-btn btn-delete" onclick="deleteMethod({{ m.id }}, '{{ m.name }}')">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="methods-empty" id="emptyState">
+                    <div class="methods-empty-icon">💳</div>
+                    <p>Belum ada metode pembayaran. Tambahkan yang pertama.</p>
+                </div>
+            {% endif %}
+        </div>
+    </main>
+</div>
+
+<!-- Modal Tambah / Edit -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+        <h2 class="modal-title" id="modalTitle">Tambah Metode Pembayaran</h2>
+        <div class="modal-field">
+            <label class="modal-label" for="methodName">Nama Metode</label>
+            <input type="text" id="methodName" class="modal-input" placeholder="cth: Tunai, QRIS, Transfer BCA">
+            <p class="modal-error" id="modalError"></p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeModal()">Batal</button>
+            <button class="btn-save" id="saveBtn" onclick="saveMethod()">Simpan</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let editingId = null;
+
+function openModal(id = null, name = '') {
+    editingId = id;
+    document.getElementById('modalTitle').textContent = id ? 'Edit Metode Pembayaran' : 'Tambah Metode Pembayaran';
+    document.getElementById('methodName').value = name;
+    document.getElementById('modalError').style.display = 'none';
+    document.getElementById('modalOverlay').classList.add('show');
+    setTimeout(() => document.getElementById('methodName').focus(), 100);
+}
+
+function closeModal(e) {
+    if (e && e.target !== document.getElementById('modalOverlay')) return;
+    document.getElementById('modalOverlay').classList.remove('show');
+    editingId = null;
+}
+
+document.getElementById('methodName').addEventListener('keydown', e => {
+    if (e.key === 'Enter') saveMethod();
+    if (e.key === 'Escape') closeModal();
+});
+
+async function saveMethod() {
+    const name = document.getElementById('methodName').value.trim();
+    if (!name) return;
+
+    const saveBtn = document.getElementById('saveBtn');
+    saveBtn.disabled = true;
+
+    const url = editingId ? `/admin/payment-methods/${editingId}` : '/admin/payment-methods';
+    const method = editingId ? 'PUT' : 'POST';
+
+    try {
+        const res = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+            const err = document.getElementById('modalError');
+            err.textContent = data.detail || 'Gagal menyimpan';
+            err.style.display = 'block';
+            return;
+        }
+
+        document.getElementById('modalOverlay').classList.remove('show');
+        location.reload();
+    } finally {
+        saveBtn.disabled = false;
+    }
+}
+
+async function toggleMethod(id, isActive) {
+    const res = await fetch(`/admin/payment-methods/${id}/toggle`, { method: 'PUT' });
+    if (!res.ok) return;
+    const data = await res.json();
+
+    const pill = document.getElementById(`pill-${id}`);
+    const btn = document.getElementById(`toggle-${id}`);
+
+    if (data.is_active) {
+        pill.className = 'status-pill active';
+        pill.textContent = '● Aktif';
+        btn.className = 'action-btn btn-toggle-active';
+        btn.textContent = 'Nonaktifkan';
+        btn.onclick = () => toggleMethod(id, true);
+    } else {
+        pill.className = 'status-pill inactive';
+        pill.textContent = '○ Nonaktif';
+        btn.className = 'action-btn btn-toggle-inactive';
+        btn.textContent = 'Aktifkan';
+        btn.onclick = () => toggleMethod(id, false);
+    }
+}
+
+async function deleteMethod(id, name) {
+    if (!confirm(`Hapus metode "${name}"?`)) return;
+    const res = await fetch(`/admin/payment-methods/${id}`, { method: 'DELETE' });
+    if (res.ok) {
+        const row = document.getElementById(`row-${id}`);
+        row.style.opacity = '0';
+        row.style.transition = 'opacity 0.2s ease';
+        setTimeout(() => row.remove(), 200);
+    }
+}
+</script>
+{% endblock %}

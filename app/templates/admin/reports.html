@@ -1,348 +1,550 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reports - SelfCafe Admin</title>
-    <link rel="stylesheet" href="/static/css/design-system.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
-    <style>
-        body {
-            display: flex;
-            margin: 0;
-            background: #F3F0EE;
-            font-family: Inter, sans-serif;
-        }
+{% extends "base.html" %}
 
-        .main-content {
-            margin-left: 280px;
-            padding: 40px;
-            width: calc(100% - 280px);
-        }
+{% block title %}Laporan - Admin{% endblock %}
 
-        .page-header {
-            margin-bottom: 32px;
-        }
+{% block extra_head %}
+<style>
+.reports-container {
+    min-height: 100vh;
+    background: var(--color-canvas-cream);
+}
 
-        .page-title {
-            font-size: 36px;
-            font-weight: 500;
-            color: #141413;
-            letter-spacing: -0.02em;
-            margin: 0;
-        }
+.main-content {
+    margin-left: 280px;
+    padding: 48px 64px;
+    min-height: 100vh;
+}
 
-        .tabs {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 24px;
-        }
+@media (max-width: 768px) {
+    .main-content {
+        margin-left: 0;
+        padding: 24px;
+        padding-top: 80px;
+    }
+}
 
-        .tab-button {
-            padding: 8px 24px;
-            border-radius: 20px;
-            border: 1.5px solid #141413;
-            background: white;
-            color: #141413;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            text-decoration: none;
-            transition: all 0.2s;
-        }
+.page-header {
+    margin-bottom: 32px;
+}
 
-        .tab-button.active {
-            background: #141413;
-            color: #F3F0EE;
-        }
+.page-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-coffee-medium);
+    margin-bottom: 12px;
+}
 
-        .date-filter {
-            background: white;
-            padding: 24px;
-            border-radius: 40px;
-            margin-bottom: 24px;
-            box-shadow: rgba(0,0,0,0.08) 0px 24px 48px;
-        }
+.page-eyebrow-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--color-light-signal-orange);
+    border-radius: 50%;
+}
 
-        .date-filter form {
-            display: flex;
-            gap: 16px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
+.page-title {
+    font-size: 40px;
+    font-weight: 500;
+    color: var(--color-ink-black);
+    letter-spacing: -0.02em;
+    margin: 0;
+}
 
-        .date-input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
+/* Tabs */
+.tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+}
 
-        .date-input-group label {
-            font-size: 14px;
-            font-weight: 500;
-            color: #141413;
-        }
+.tab-button {
+    padding: 9px 22px;
+    border-radius: var(--radius-pill);
+    border: 1.5px solid rgba(20,20,19,0.15);
+    background: var(--color-white);
+    color: var(--color-slate-gray);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    font-family: var(--font-body);
+}
 
-        .date-input-group input {
-            padding: 8px 16px;
-            border: 1.5px solid #141413;
-            border-radius: 20px;
-            font-size: 16px;
-            font-family: Inter, sans-serif;
-        }
+.tab-button:hover {
+    border-color: var(--color-ink-black);
+    color: var(--color-ink-black);
+}
 
-        .submit-button {
-            padding: 8px 24px;
-            border-radius: 20px;
-            background: #141413;
-            color: #F3F0EE;
-            border: none;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            margin-top: 20px;
-        }
+.tab-button.active {
+    background: var(--color-ink-black);
+    border-color: var(--color-ink-black);
+    color: var(--color-white);
+}
 
-        .report-card {
-            background: white;
-            padding: 32px;
-            border-radius: 40px;
-            box-shadow: rgba(0,0,0,0.08) 0px 24px 48px;
-            margin-bottom: 24px;
-        }
+/* Filter Card */
+.filter-card {
+    background: var(--color-white);
+    padding: 24px 28px;
+    border-radius: var(--radius-xl);
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-card);
+}
 
-        .metrics-row {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 24px;
-            margin-bottom: 32px;
-        }
+.filter-row {
+    display: flex;
+    gap: 16px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
 
-        .metric-box {
-            text-align: center;
-        }
+.filter-shortcuts {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
 
-        .metric-value {
-            font-size: 36px;
-            font-weight: 500;
-            color: #141413;
-            margin: 0 0 8px 0;
-        }
+.shortcut-btn {
+    padding: 6px 14px;
+    border-radius: var(--radius-pill);
+    border: 1.5px solid rgba(20,20,19,0.12);
+    background: var(--color-canvas-cream);
+    color: var(--color-slate-gray);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: var(--font-body);
+    transition: all 0.15s ease;
+}
 
-        .metric-label {
-            font-size: 14px;
-            font-weight: 450;
-            color: #696969;
-            margin: 0;
-        }
+.shortcut-btn:hover {
+    border-color: var(--color-ink-black);
+    color: var(--color-ink-black);
+}
 
-        .table-container {
-            overflow-x: auto;
-        }
+.field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
+.field-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-charcoal);
+}
 
-        th {
-            text-align: left;
-            padding: 12px;
-            font-size: 14px;
-            font-weight: 700;
-            color: #141413;
-            border-bottom: 2px solid #F3F0EE;
-        }
+.field-input {
+    padding: 10px 16px;
+    border: 1.5px solid rgba(20,20,19,0.12);
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-family: var(--font-body);
+    color: var(--color-ink-black);
+    background: var(--color-canvas-cream);
+    outline: none;
+    transition: border-color 0.2s ease;
+}
 
-        td {
-            padding: 12px;
-            font-size: 16px;
-            font-weight: 450;
-            color: #141413;
-            border-bottom: 1px solid #F3F0EE;
-        }
+.field-input:focus {
+    border-color: var(--color-ink-black);
+}
 
-        tr.top-3 {
-            background: rgba(111, 78, 55, 0.05);
-        }
+.filter-submit {
+    padding: 10px 24px;
+    border-radius: var(--radius-md);
+    background: var(--color-ink-black);
+    color: var(--color-white);
+    border: none;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: var(--font-body);
+    transition: all 0.2s ease;
+}
 
-        .empty-state {
-            text-align: center;
-            padding: 48px;
-            color: #696969;
-            font-size: 16px;
-        }
+.filter-submit:hover {
+    background: #2a2a2a;
+}
 
-        .chart-container {
-            margin-top: 32px;
-            height: 400px;
-        }
+.export-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--color-ink-black);
+    border: 1.5px solid rgba(20,20,19,0.2);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: var(--font-body);
+    transition: all 0.2s ease;
+}
 
-        @media (max-width: 768px) {
-            .main-content {
-                margin-left: 0;
-                width: 100%;
-                padding: 20px;
-            }
+.export-btn:hover {
+    background: var(--color-canvas-cream);
+    border-color: var(--color-ink-black);
+}
 
-            .metrics-row {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
-</head>
-<body>
+/* Report Card */
+.report-card {
+    background: var(--color-white);
+    padding: 32px;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-card);
+    margin-bottom: 24px;
+}
+
+/* Metrics */
+.metrics-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    margin-bottom: 32px;
+}
+
+.metric-box {
+    text-align: center;
+    padding: 24px;
+    border-right: 1px solid rgba(0,0,0,0.06);
+}
+
+.metric-box:last-child {
+    border-right: none;
+}
+
+.metric-value {
+    font-size: 32px;
+    font-weight: 500;
+    color: var(--color-ink-black);
+    letter-spacing: -0.02em;
+    margin: 0 0 6px 0;
+}
+
+.metric-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-slate-gray);
+    margin: 0;
+}
+
+.chart-container {
+    height: 320px;
+    margin-top: 8px;
+}
+
+/* Table */
+.table-container {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th {
+    text-align: left;
+    padding: 10px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-slate-gray);
+    border-bottom: 2px solid var(--color-canvas-cream);
+}
+
+td {
+    padding: 14px 12px;
+    font-size: 14px;
+    font-weight: 450;
+    color: var(--color-ink-black);
+    border-bottom: 1px solid var(--color-canvas-cream);
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+tr.top-item td:first-child {
+    font-weight: 700;
+    color: var(--color-coffee-medium);
+}
+
+.rank-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 700;
+    background: var(--color-canvas-cream);
+    color: var(--color-slate-gray);
+}
+
+.rank-badge.gold { background: #FEF3C7; color: #92400E; }
+.rank-badge.silver { background: #F1F5F9; color: #475569; }
+.rank-badge.bronze { background: #FEF2F2; color: #9A3A0A; }
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--color-slate-gray);
+}
+
+.empty-icon {
+    font-size: 40px;
+    opacity: 0.3;
+    margin-bottom: 12px;
+}
+
+@media (max-width: 768px) {
+    .metrics-row {
+        grid-template-columns: 1fr;
+    }
+
+    .metric-box {
+        border-right: none;
+        border-bottom: 1px solid rgba(0,0,0,0.06);
+        padding: 16px;
+    }
+
+    .metric-box:last-child {
+        border-bottom: none;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="reports-container">
     {% include "admin/sidebar.html" %}
 
-    <div class="main-content">
+    <main class="main-content">
         <div class="page-header">
-            <h1 class="page-title">Reports</h1>
+            <div class="page-eyebrow">
+                <span class="page-eyebrow-dot"></span>
+                <span>Analitik</span>
+            </div>
+            <h1 class="page-title">Laporan</h1>
         </div>
 
         <div class="tabs">
             <a href="/admin/reports?start={{ start_date }}&end={{ end_date }}&tab=daily-sales"
                class="tab-button {% if active_tab == 'daily-sales' %}active{% endif %}">
-                Daily Sales
+                Penjualan Harian
             </a>
             <a href="/admin/reports?start={{ start_date }}&end={{ end_date }}&tab=best-sellers"
                class="tab-button {% if active_tab == 'best-sellers' %}active{% endif %}">
-                Best Sellers
+                Menu Terlaris
             </a>
         </div>
 
-        <div class="date-filter">
-            <form method="get" action="/admin/reports">
+        <div class="filter-card">
+            <div class="filter-shortcuts">
+                <button class="shortcut-btn" onclick="setRange('today')">Hari Ini</button>
+                <button class="shortcut-btn" onclick="setRange('week')">7 Hari Terakhir</button>
+                <button class="shortcut-btn" onclick="setRange('month')">Bulan Ini</button>
+            </div>
+            <form method="get" action="/admin/reports" id="filterForm">
                 <input type="hidden" name="tab" value="{{ active_tab }}">
-
-                <div class="date-input-group">
-                    <label for="start">Start Date</label>
-                    <input type="text" id="start" name="start" value="{{ start_date }}" required>
+                <div class="filter-row">
+                    <div class="field-group">
+                        <label class="field-label" for="start">Dari Tanggal</label>
+                        <input type="date" id="start" name="start" value="{{ start_date }}" class="field-input" required>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label" for="end">Sampai Tanggal</label>
+                        <input type="date" id="end" name="end" value="{{ end_date }}" class="field-input" required>
+                    </div>
+                    <button type="submit" class="filter-submit">Terapkan</button>
+                    {% if (active_tab == 'daily-sales' and daily_sales) or (active_tab == 'best-sellers' and best_sellers and best_sellers|length > 0) %}
+                    <button type="button" class="export-btn" onclick="exportCSV()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Export CSV
+                    </button>
+                    {% endif %}
                 </div>
-
-                <div class="date-input-group">
-                    <label for="end">End Date</label>
-                    <input type="text" id="end" name="end" value="{{ end_date }}" required>
-                </div>
-
-                <button type="submit" class="submit-button">Apply Filter</button>
             </form>
         </div>
 
-        {% if active_tab == 'daily-sales' and daily_sales %}
+        {% if active_tab == 'daily-sales' %}
         <div class="report-card">
+            {% if daily_sales %}
             <div class="metrics-row">
                 <div class="metric-box">
                     <p class="metric-value">Rp {{ "{:,.0f}".format(daily_sales.total_revenue) }}</p>
-                    <p class="metric-label">Total Revenue</p>
+                    <p class="metric-label">Total Pendapatan</p>
                 </div>
                 <div class="metric-box">
                     <p class="metric-value">{{ daily_sales.order_count }}</p>
-                    <p class="metric-label">Order Count</p>
+                    <p class="metric-label">Jumlah Pesanan</p>
                 </div>
                 <div class="metric-box">
                     <p class="metric-value">Rp {{ "{:,.0f}".format(daily_sales.average_order_value) }}</p>
-                    <p class="metric-label">Average Order Value</p>
+                    <p class="metric-label">Rata-rata Pesanan</p>
                 </div>
             </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">📊</div>
+                <p>Tidak ada data untuk rentang tanggal yang dipilih</p>
+            </div>
+            {% endif %}
         </div>
         {% endif %}
 
-        {% if active_tab == 'best-sellers' and best_sellers %}
+        {% if active_tab == 'best-sellers' %}
         <div class="report-card">
-            {% if best_sellers|length > 0 %}
+            {% if best_sellers and best_sellers|length > 0 %}
             <div class="table-container">
                 <table>
                     <thead>
                         <tr>
-                            <th>Rank</th>
-                            <th>Menu Name</th>
-                            <th>Category</th>
-                            <th>Quantity Sold</th>
-                            <th>Revenue</th>
+                            <th>Peringkat</th>
+                            <th>Nama Menu</th>
+                            <th>Kategori</th>
+                            <th>Terjual</th>
+                            <th>% dari Total</th>
+                            <th>Pendapatan</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for item in best_sellers %}
-                        <tr {% if item.rank <= 3 %}class="top-3"{% endif %}>
-                            <td>{{ item.rank }}</td>
+                        <tr {% if item.rank <= 3 %}class="top-item"{% endif %}>
+                            <td>
+                                {% if item.rank == 1 %}
+                                    <span class="rank-badge gold">1</span>
+                                {% elif item.rank == 2 %}
+                                    <span class="rank-badge silver">2</span>
+                                {% elif item.rank == 3 %}
+                                    <span class="rank-badge bronze">3</span>
+                                {% else %}
+                                    <span class="rank-badge">{{ item.rank }}</span>
+                                {% endif %}
+                            </td>
                             <td>{{ item.menu_name }}</td>
                             <td>{{ item.category_name }}</td>
                             <td>{{ item.quantity_sold }}</td>
+                            <td>
+                                {% set total_sold = best_sellers | sum(attribute='quantity_sold') %}
+                                {% if total_sold > 0 %}
+                                    {{ "%.1f"|format(item.quantity_sold / total_sold * 100) }}%
+                                {% else %}—{% endif %}
+                            </td>
                             <td>Rp {{ "{:,.0f}".format(item.total_revenue) }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
-
             <div class="chart-container">
                 <canvas id="bestSellersChart"></canvas>
             </div>
             {% else %}
             <div class="empty-state">
-                No data available for selected date range
+                <div class="empty-icon">☕</div>
+                <p>Tidak ada data untuk rentang tanggal yang dipilih</p>
             </div>
             {% endif %}
         </div>
         {% endif %}
-    </div>
+    </main>
+</div>
+{% endblock %}
 
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script>
-        // Initialize date pickers
-        flatpickr("#start", {
-            dateFormat: "Y-m-d",
-            maxDate: "today"
-        });
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+function setRange(period) {
+    const today = new Date();
+    const fmt = d => d.toISOString().split('T')[0];
+    let start, end = fmt(today);
 
-        flatpickr("#end", {
-            dateFormat: "Y-m-d",
-            maxDate: "today"
-        });
+    if (period === 'today') {
+        start = end;
+    } else if (period === 'week') {
+        const d = new Date(today);
+        d.setDate(d.getDate() - 6);
+        start = fmt(d);
+    } else if (period === 'month') {
+        start = fmt(new Date(today.getFullYear(), today.getMonth(), 1));
+    }
 
-        // Initialize chart for best sellers
-        {% if active_tab == 'best-sellers' and best_sellers and best_sellers|length > 0 %}
-        const ctx = document.getElementById('bestSellersChart');
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: [
-                    {% for item in best_sellers %}
-                    "{{ item.menu_name }}"{% if not loop.last %},{% endif %}
-                    {% endfor %}
-                ],
-                datasets: [{
-                    label: 'Quantity Sold',
-                    data: [
-                        {% for item in best_sellers %}
-                        {{ item.quantity_sold }}{% if not loop.last %},{% endif %}
-                        {% endfor %}
-                    ],
-                    backgroundColor: '#6F4E37',
-                    borderRadius: 8
-                }]
+    document.getElementById('start').value = start;
+    document.getElementById('end').value = end;
+    document.getElementById('filterForm').submit();
+}
+
+function exportCSV() {
+    {% if active_tab == 'daily-sales' and daily_sales %}
+    const rows = [
+        ['Metrik', 'Nilai'],
+        ['Total Pendapatan', '{{ daily_sales.total_revenue }}'],
+        ['Jumlah Pesanan', '{{ daily_sales.order_count }}'],
+        ['Rata-rata Pesanan', '{{ daily_sales.average_order_value }}'],
+    ];
+    downloadCSV(rows, 'penjualan-harian-{{ start_date }}-{{ end_date }}.csv');
+    {% elif active_tab == 'best-sellers' and best_sellers and best_sellers|length > 0 %}
+    const rows = [
+        ['Peringkat', 'Nama Menu', 'Kategori', 'Terjual', 'Pendapatan'],
+        {% for item in best_sellers %}
+        ['{{ item.rank }}', '{{ item.menu_name }}', '{{ item.category_name }}', '{{ item.quantity_sold }}', '{{ item.total_revenue }}'],
+        {% endfor %}
+    ];
+    downloadCSV(rows, 'menu-terlaris-{{ start_date }}-{{ end_date }}.csv');
+    {% endif %}
+}
+
+function downloadCSV(rows, filename) {
+    const csv = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+}
+
+{% if active_tab == 'best-sellers' and best_sellers and best_sellers|length > 0 %}
+new Chart(document.getElementById('bestSellersChart'), {
+    type: 'bar',
+    data: {
+        labels: [{% for item in best_sellers %}"{{ item.menu_name }}"{% if not loop.last %},{% endif %}{% endfor %}],
+        datasets: [{
+            label: 'Terjual',
+            data: [{% for item in best_sellers %}{{ item.quantity_sold }}{% if not loop.last %},{% endif %}{% endfor %}],
+            backgroundColor: '#6F4E37',
+            borderRadius: 8
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+            x: {
+                beginAtZero: true,
+                ticks: { precision: 0 },
+                grid: { color: 'rgba(0,0,0,0.04)' }
             },
-            options: {
-                indexAxis: 'y',
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                },
-                scales: {
-                    x: {
-                        beginAtZero: true,
-                        ticks: {
-                            precision: 0
-                        }
-                    }
-                }
-            }
-        });
-        {% endif %}
-    </script>
-</body>
-</html>
+            y: { grid: { display: false } }
+        }
+    }
+});
+{% endif %}
+</script>
+{% endblock %}

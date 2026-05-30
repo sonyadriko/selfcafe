@@ -691,13 +691,7 @@
                                 {% if order.status.value == 'pending' %}Menunggu{% elif order.status.value == 'paid' %}Dibayar{% elif order.status.value == 'completed' %}Selesai{% else %}Batal{% endif %}
                             </span>
                             {% if order.payment_method %}
-                            <span class="payment-method-badge">
-                                {% if order.payment_method == 'cash' %}💵 Tunai
-                                {% elif order.payment_method == 'qris' %}📱 QRIS
-                                {% elif order.payment_method == 'transfer' %}🏦 Transfer
-                                {% elif order.payment_method == 'e-wallet' %}💳 E-Wallet
-                                {% else %}{{ order.payment_method }}{% endif %}
-                            </span>
+                            <span class="payment-method-badge">💳 {{ order.payment_method }}</span>
                             {% endif %}
                         </div>
 
@@ -766,22 +760,19 @@
         <div class="payment-modal-body">
             <p style="font-size: 14px; color: var(--color-slate-gray); margin-bottom: 20px;">Pilih metode pembayaran:</p>
             <div class="payment-method-grid">
-                <button class="payment-method-btn" data-method="cash" onclick="selectPaymentMethod('cash')">
-                    <span class="payment-method-icon">💵</span>
-                    <span class="payment-method-label">Tunai</span>
-                </button>
-                <button class="payment-method-btn" data-method="qris" onclick="selectPaymentMethod('qris')">
-                    <span class="payment-method-icon">📱</span>
-                    <span class="payment-method-label">QRIS</span>
-                </button>
-                <button class="payment-method-btn" data-method="transfer" onclick="selectPaymentMethod('transfer')">
-                    <span class="payment-method-icon">🏦</span>
-                    <span class="payment-method-label">Transfer</span>
-                </button>
-                <button class="payment-method-btn" data-method="e-wallet" onclick="selectPaymentMethod('e-wallet')">
-                    <span class="payment-method-icon">💳</span>
-                    <span class="payment-method-label">E-Wallet</span>
-                </button>
+                {% if payment_methods %}
+                    {% for pm in payment_methods %}
+                    <button class="payment-method-btn" data-method="{{ pm.name }}" onclick="selectPaymentMethod('{{ pm.name }}')">
+                        <span class="payment-method-icon">💳</span>
+                        <span class="payment-method-label">{{ pm.name }}</span>
+                    </button>
+                    {% endfor %}
+                {% else %}
+                    <p style="font-size:13px; color:var(--color-slate-gray); grid-column:1/-1;">
+                        Belum ada metode pembayaran aktif.
+                        <a href="/admin/payment-methods" style="color:var(--color-ink-black);">Tambahkan di pengaturan.</a>
+                    </p>
+                {% endif %}
             </div>
         </div>
 

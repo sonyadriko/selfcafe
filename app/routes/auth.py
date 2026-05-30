@@ -39,7 +39,8 @@ async def login(
         expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     )
 
-    response = RedirectResponse(url="/admin/dashboard", status_code=303)
+    redirect_url = "/cashier" if user.role == "kasir" else "/admin/dashboard"
+    response = RedirectResponse(url=redirect_url, status_code=303)
     response.set_cookie(
         key="access_token",
         value=f"Bearer {access_token}",
@@ -48,8 +49,8 @@ async def login(
     )
     return response
 
-@router.post("/logout")
+@router.get("/logout")
 async def logout():
-    response = RedirectResponse(url="/auth/login")
+    response = RedirectResponse(url="/auth/login", status_code=302)
     response.delete_cookie("access_token")
     return response
