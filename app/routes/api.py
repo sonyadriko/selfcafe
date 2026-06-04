@@ -122,6 +122,7 @@ async def track_order(tracking_token: str, db: Session = Depends(get_db)):
     return OrderTrackingResponse(
         id=order.id,
         table_number=order.table_number,
+        customer_name=order.customer_name,
         total_amount=order.total_amount,
         status=order.status,
         created_at=order.created_at,

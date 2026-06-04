@@ -23,6 +23,7 @@ class OrderItemResponse(OrderItemBase):
 
 class OrderBase(BaseModel):
     table_number: int = Field(gt=0)
+    customer_name: str | None = None
 
 class OrderCreate(OrderBase):
     items: List[OrderItemCreate]
@@ -46,6 +47,7 @@ class OrderTrackingResponse(BaseModel):
     """Response for order tracking by token."""
     id: int
     table_number: int
+    customer_name: str | None = None
     total_amount: Decimal
     status: OrderStatus
     created_at: datetime
@@ -64,6 +66,7 @@ class CashierScanResponse(BaseModel):
     """Response for cashier scan with order details."""
     order_id: int
     table_number: int
+    customer_name: str | None = None
     total_amount: Decimal
     status: OrderStatus
     items: List[OrderItemResponse]

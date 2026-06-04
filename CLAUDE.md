@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 SelfCafe Ordering System is a web-based self-ordering system for coffee shops (Sowan Kopi). Built with FastAPI + MySQL + Jinja2, following a Waterfall development model as documented in the thesis.
 
-**Core flow:** Customer scans QR code → browses menu → places order → Kasir confirms payment → Order completed.
+**Core flow:** Customer scans QR code → browses menu → enters name → places order → Kasir confirms payment → Order completed.
 
 ## Development Commands
 
@@ -87,7 +87,7 @@ GET  /api/cashier/orders         # List pending orders
 
 - **User** - Admin/Staff/Kasir roles with bcrypt password hashing
 - **Category/Menu** - Menu items with categories, stock tracking
-- **Order/OrderItem** - Orders with status (pending/paid/completed/cancelled)
+- **Order/OrderItem** - Orders with status (pending/paid/completed/cancelled), includes `customer_name` field collected at checkout
 - **Promo** - Discounts (percentage/fixed) with date ranges
 
 ### Authentication Flow

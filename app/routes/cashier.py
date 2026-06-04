@@ -69,6 +69,7 @@ async def scan_order(
     return CashierScanResponse(
         order_id=order.id,
         table_number=order.table_number,
+        customer_name=order.customer_name,
         total_amount=order.total_amount,
         status=order.status,
         items=items
@@ -187,6 +188,7 @@ async def list_active_orders(
         return {
             "id": order.id,
             "table_number": order.table_number,
+            "customer_name": order.customer_name,
             "total_amount": float(order.total_amount),
             "status": order.status.value,
             "created_at": order.created_at.isoformat(),

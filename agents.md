@@ -52,12 +52,13 @@ This document tracks AI agents used in developing the SelfCafe Ordering System.
 | Admin Dashboard | 12-15 | general-purpose |
 | Extras | 16-17 | general-purpose |
 | QR Order Tracking | 18 | general-purpose |
+| Customer Name at Checkout | 19 | claude-sonnet-4-6 |
 
 ## Session Statistics
 
-- **Total commits**: 25
-- **Files tracked**: 83
-- **Python LOC**: ~1200
+- **Total commits**: 26
+- **Files tracked**: 84
+- **Python LOC**: ~1220
 - **Design system**: Mastercard-inspired CSS (~600 lines)
 
 ## Key Design Decisions

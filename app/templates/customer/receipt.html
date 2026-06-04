@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Struk Pesanan #{{ order.id }} - Sowan Kopi</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 24px 16px;
+        }
+
+        /* Print action bar — hidden when printing */
+        .print-bar {
+            width: 100%;
+            max-width: 360px;
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn-print {
+            flex: 1;
+            padding: 12px;
+            background: #141413;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-print:hover { background: #2a2a2a; }
+
+        .btn-back {
+            padding: 12px 20px;
+            background: transparent;
+            color: #141413;
+            border: 1.5px solid rgba(20,20,19,0.2);
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .btn-back:hover { background: #e8e5e2; }
+
+        /* Receipt paper */
+        .receipt {
+            width: 100%;
+            max-width: 360px;
+            background: #fff;
+            padding: 32px 24px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+            position: relative;
+        }
+
+        /* Torn-paper edge top */
+        .receipt::before {
+            content: '';
+            display: block;
+            height: 12px;
+            background:
+                radial-gradient(circle at 6px 0, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 18px 0, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 30px 0, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 42px 0, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 54px 0, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 66px 0, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 78px 0, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 90px 0, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 102px 0, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 114px 0, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 126px 0, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 138px 0, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 150px 0, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 162px 0, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 174px 0, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 186px 0, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 198px 0, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 210px 0, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 222px 0, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 234px 0, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 246px 0, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 258px 0, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 270px 0, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 282px 0, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 294px 0, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 306px 0, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 318px 0, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 330px 0, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 342px 0, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 354px 0, #f5f5f5 6px, transparent 6px);
+            background-size: 12px 12px;
+            background-repeat: repeat-x;
+            position: absolute;
+            top: 0; left: 0; right: 0;
+        }
+
+        /* Torn-paper edge bottom */
+        .receipt::after {
+            content: '';
+            display: block;
+            height: 12px;
+            background:
+                radial-gradient(circle at 6px 12px, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 18px 12px, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 30px 12px, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 42px 12px, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 54px 12px, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 66px 12px, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 78px 12px, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 90px 12px, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 102px 12px, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 114px 12px, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 126px 12px, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 138px 12px, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 150px 12px, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 162px 12px, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 174px 12px, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 186px 12px, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 198px 12px, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 210px 12px, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 222px 12px, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 234px 12px, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 246px 12px, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 258px 12px, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 270px 12px, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 282px 12px, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 294px 12px, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 306px 12px, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 318px 12px, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 330px 12px, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 342px 12px, #f5f5f5 6px, transparent 6px),
+                radial-gradient(circle at 354px 12px, #f5f5f5 6px, transparent 6px);
+            background-size: 12px 12px;
+            background-repeat: repeat-x;
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+        }
+
+        .receipt-inner { padding: 12px 0; }
+
+        /* Header */
+        .receipt-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .receipt-logo { font-size: 28px; margin-bottom: 4px; }
+
+        .receipt-store-name {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #141413;
+        }
+
+        .receipt-tagline { font-size: 11px; color: #888; margin-top: 2px; }
+
+        .divider {
+            border: none;
+            border-top: 1px dashed #ccc;
+            margin: 16px 0;
+        }
+
+        .divider-solid {
+            border: none;
+            border-top: 2px solid #141413;
+            margin: 16px 0;
+        }
+
+        /* Meta info */
+        .meta-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #555;
+            margin-bottom: 4px;
+        }
+
+        .meta-value { font-weight: 600; color: #141413; }
+
+        /* Items */
+        .items-section { margin: 4px 0; }
+
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            font-size: 13px;
+            margin-bottom: 8px;
+            gap: 8px;
+        }
+
+        .item-left { flex: 1; }
+        .item-name { font-weight: 600; color: #141413; line-height: 1.3; }
+        .item-qty { font-size: 12px; color: #888; }
+        .item-price { font-weight: 600; color: #141413; white-space: nowrap; }
+
+        /* Totals */
+        .totals-section { margin-top: 4px; }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin-bottom: 4px;
+            color: #555;
+        }
+
+        .total-row.grand {
+            font-size: 16px;
+            font-weight: 700;
+            color: #141413;
+            margin-top: 8px;
+        }
+
+        /* Status badge */
+        .status-section { text-align: center; margin: 16px 0 8px; }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .status-badge.completed { background: #d1fae5; color: #065f46; }
+        .status-badge.paid      { background: #dbeafe; color: #1e40af; }
+        .status-badge.pending   { background: #fef3c7; color: #92400e; }
+
+        /* Footer */
+        .receipt-footer {
+            text-align: center;
+            font-size: 11px;
+            color: #aaa;
+            margin-top: 8px;
+            line-height: 1.6;
+        }
+
+        /* ===== Print styles ===== */
+        @media print {
+            body { background: #fff; padding: 0; }
+            .print-bar { display: none; }
+            .receipt {
+                box-shadow: none;
+                max-width: 100%;
+                padding: 8px 16px 20px;
+            }
+            .receipt::before, .receipt::after { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="print-bar">
+        <button class="btn-print" onclick="window.print()">🖨️ Cetak Struk</button>
+        <a class="btn-back" href="/customer/track/{{ order.tracking_token }}">← Kembali</a>
+    </div>
+
+    <div class="receipt">
+        <div class="receipt-inner">
+
+            <div class="receipt-header">
+                <div class="receipt-logo">☕</div>
+                <div class="receipt-store-name">Sowan Kopi</div>
+                <div class="receipt-tagline">Terima kasih atas pesanan Anda</div>
+            </div>
+
+            <hr class="divider-solid">
+
+            <div class="meta-row">
+                <span>No. Order</span>
+                <span class="meta-value">#{{ order.id }}</span>
+            </div>
+            <div class="meta-row">
+                <span>Tanggal</span>
+                <span class="meta-value">{{ order.created_at.strftime('%d %b %Y') }}</span>
+            </div>
+            <div class="meta-row">
+                <span>Jam</span>
+                <span class="meta-value">{{ order.created_at.strftime('%H:%M') }}</span>
+            </div>
+            <div class="meta-row">
+                <span>Meja</span>
+                <span class="meta-value">{{ order.table_number }}</span>
+            </div>
+            {% if order.customer_name %}
+            <div class="meta-row">
+                <span>Nama</span>
+                <span class="meta-value">{{ order.customer_name }}</span>
+            </div>
+            {% endif %}
+            {% if order.payment_method %}
+            <div class="meta-row">
+                <span>Pembayaran</span>
+                <span class="meta-value">{{ order.payment_method }}</span>
+            </div>
+            {% endif %}
+
+            <hr class="divider">
+
+            <div class="items-section">
+                {% for item in order.items %}
+                <div class="item-row">
+                    <div class="item-left">
+                        <div class="item-name">{{ item.menu.name if item.menu else 'Menu' }}</div>
+                        <div class="item-qty">{{ item.quantity }}x @ Rp {{ "{:,}".format((item.subtotal / item.quantity)|int).replace(',', '.') }}</div>
+                    </div>
+                    <div class="item-price">Rp {{ "{:,}".format(item.subtotal|int).replace(',', '.') }}</div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <hr class="divider">
+
+            <div class="totals-section">
+                <div class="total-row grand">
+                    <span>TOTAL</span>
+                    <span>Rp {{ "{:,}".format(order.total_amount|int).replace(',', '.') }}</span>
+                </div>
+            </div>
+
+            <div class="status-section">
+                <span class="status-badge {{ order.status.value }}">
+                    {% if order.status.value == 'completed' %}✓ Selesai
+                    {% elif order.status.value == 'paid' %}💳 Sudah Dibayar
+                    {% else %}⏳ {{ order.status.value|capitalize }}
+                    {% endif %}
+                </span>
+            </div>
+
+            <hr class="divider">
+
+            <div class="receipt-footer">
+                Terima kasih sudah berkunjung!<br>
+                Sampai jumpa lagi ☕<br><br>
+                <small>{{ order.tracking_token[:16] }}...</small>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>

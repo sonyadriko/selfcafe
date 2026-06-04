@@ -67,6 +67,7 @@ async def create_order(order: OrderCreate, db: Session = Depends(get_db)):
 
     new_order = Order(
         table_number=order.table_number,
+        customer_name=order.customer_name,
         total_amount=total,
         status="pending",
         tracking_token=generate_tracking_token()
@@ -139,6 +140,18 @@ async def track_order(tracking_token: str, db: Session = Depends(get_db)):
         created_at=order.created_at,
         items=items
     )
+
+
+@router.get("/receipt/{tracking_token}", response_class=HTMLResponse)
+async def order_receipt(request: Request, tracking_token: str, db: Session = Depends(get_db)):
+    """Printable receipt page for a completed order."""
+    order = get_order_by_token(db, tracking_token)
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    return templates.TemplateResponse("customer/receipt.html", {
+        "request": request,
+        "order": order
+    })
 
 
 @router.get("/qr/{tracking_token}")

@@ -544,6 +544,39 @@
     cursor: not-allowed;
 }
 
+.cart-name-field {
+    margin-bottom: 12px;
+}
+
+.cart-name-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-slate-gray);
+    margin-bottom: 6px;
+}
+
+.cart-name-input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid rgba(20, 20, 19, 0.15);
+    border-radius: var(--radius-md);
+    font-size: 15px;
+    color: var(--color-ink-black);
+    background: var(--color-white);
+    transition: border-color 0.2s ease;
+    box-sizing: border-box;
+}
+
+.cart-name-input:focus {
+    outline: none;
+    border-color: var(--color-ink-black);
+}
+
+.cart-name-input::placeholder {
+    color: rgba(20, 20, 19, 0.3);
+}
+
 /* Empty State */
 .cart-empty {
     text-align: center;
@@ -810,6 +843,12 @@
             <span class="cart-summary-label">Total</span>
             <span class="cart-summary-total" id="cartTotal">Rp 0</span>
         </div>
+        <div class="cart-name-field">
+            <label class="cart-name-label" for="customerName">Nama Kamu</label>
+            <input class="cart-name-input" type="text" id="customerName"
+                   placeholder="Contoh: Budi" maxlength="60"
+                   oninput="onNameInput()">
+        </div>
         <button class="cart-checkout" id="checkoutBtn" onclick="placeOrder()" disabled>
             Pesan Sekarang
         </button>
@@ -948,6 +987,16 @@ function updateQuantity(index, delta) {
     }
 }
 
+function onNameInput() {
+    updateCheckoutBtn();
+}
+
+function updateCheckoutBtn() {
+    const name = document.getElementById('customerName').value.trim();
+    const checkoutBtn = document.getElementById('checkoutBtn');
+    checkoutBtn.disabled = cart.length === 0 || name.length === 0;
+}
+
 function updateCartUI() {
     const count = cart.reduce((sum, item) => sum + item.quantity, 0);
     document.getElementById('cartCount').textContent = count;
@@ -983,7 +1032,7 @@ function updateCartUI() {
 
         const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         document.getElementById('cartTotal').textContent = `Rp ${total.toLocaleString('id-ID')}`;
-        checkoutBtn.disabled = false;
+        updateCheckoutBtn();
     }
 }
 
@@ -1002,6 +1051,9 @@ function closeCart() {
 async function placeOrder() {
     if (cart.length === 0) return;
 
+    const customerName = document.getElementById('customerName').value.trim();
+    if (!customerName) return;
+
     const checkoutBtn = document.getElementById('checkoutBtn');
     checkoutBtn.disabled = true;
     checkoutBtn.textContent = 'Memproses...';
@@ -1012,6 +1064,7 @@ async function placeOrder() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 table_number: tableNumber,
+                customer_name: customerName,
                 items: cart.map(item => ({
                     menu_id: item.menu_id,
                     quantity: item.quantity

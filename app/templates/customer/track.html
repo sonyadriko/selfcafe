@@ -372,9 +372,14 @@
                     <span class="order-id">Order #<span id="orderId">-</span></span>
                     <div class="order-time" id="orderTime">-</div>
                 </div>
-                <div class="table-badge">
-                    <span>🪑</span>
-                    <span>Meja <span id="tableNumber">-</span></span>
+                <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+                    <div class="table-badge">
+                        <span>🪑</span>
+                        <span>Meja <span id="tableNumber">-</span></span>
+                    </div>
+                    <div id="customerNameBadge" style="display:none; font-size:13px; font-weight:500; color:#696969;">
+                        👤 <span id="customerNameText">-</span>
+                    </div>
                 </div>
             </div>
 
@@ -417,6 +422,12 @@
                 <p class="qr-label">Tunjukkan ke kasir untuk membayar</p>
                 <img class="qr-image" id="qrImage" src="/customer/qr/{{ tracking_token }}" alt="QR Code Pesanan">
             </div>
+
+            <a id="receiptBtn"
+               href="/customer/receipt/{{ tracking_token }}"
+               style="display:none; margin-top:24px; width:100%; padding:14px; background:#141413; color:#fff; border:none; border-radius:8px; font-size:15px; font-weight:500; cursor:pointer; text-align:center; text-decoration:none;">
+                🖨️ Cetak Struk
+            </a>
         </div>
     </div>
 </div>
@@ -457,6 +468,14 @@ function displayOrder(order) {
     // Order info
     document.getElementById('orderId').textContent = order.id;
     document.getElementById('tableNumber').textContent = order.table_number;
+
+    const nameBadge = document.getElementById('customerNameBadge');
+    if (order.customer_name) {
+        document.getElementById('customerNameText').textContent = order.customer_name;
+        nameBadge.style.display = '';
+    } else {
+        nameBadge.style.display = 'none';
+    }
 
     // Format order time
     const orderDate = new Date(order.created_at);
@@ -526,6 +545,7 @@ function updateStatus(status) {
             document.getElementById('stepPaid').className = 'progress-step completed';
             document.getElementById('stepCompleted').className = 'progress-step completed';
             document.getElementById('qrSection').classList.remove('show');
+            document.getElementById('receiptBtn').style.display = 'block';
             break;
         case 'cancelled':
             statusIcon.className = 'status-icon cancelled';

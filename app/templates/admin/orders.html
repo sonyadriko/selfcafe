@@ -664,6 +664,9 @@
                         <div class="order-card-table">
                             <span class="order-card-table-icon">🪑</span>
                             <span class="order-card-table-number">Meja {{ order.table_number }}</span>
+                            {% if order.customer_name %}
+                            <span style="font-size:12px; color:#696969; margin-left:6px;">· {{ order.customer_name }}</span>
+                            {% endif %}
                         </div>
 
                         <div class="order-card-items">

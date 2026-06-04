@@ -542,6 +542,10 @@
                         <span class="info-label">Meja</span>
                         <span class="info-value" id="tableNumber">-</span>
                     </div>
+                    <div class="info-item" id="customerNameItem" style="display:none;">
+                        <span class="info-label">Nama</span>
+                        <span class="info-value" id="customerNameDisplay">-</span>
+                    </div>
                     <div class="info-item">
                         <span class="info-label">Waktu</span>
                         <span class="info-value" id="orderTime">-</span>
@@ -580,6 +584,10 @@
             <div class="order-actions" id="orderActions">
                 <button class="action-btn btn-pay" id="payBtn" onclick="processPayment()" {% if not payment_methods %}disabled{% endif %}>Proses Pembayaran</button>
                 <button class="action-btn btn-complete" id="completeBtn" onclick="completeOrder()" style="display: none;">Selesaikan Pesanan</button>
+                <a id="receiptBtn" href="#" target="_blank"
+                   style="display:none; width:100%; padding:14px; background:#059669; color:#fff; border-radius:8px; font-size:15px; font-weight:500; text-align:center; text-decoration:none;">
+                    🖨️ Cetak Struk
+                </a>
                 <button class="btn-clear" onclick="clearOrder()">Tutup</button>
             </div>
         </div>
@@ -671,6 +679,14 @@ function displayOrder(order) {
 
     document.getElementById('orderId').textContent = `#${order.order_id}`;
     document.getElementById('tableNumber').textContent = order.table_number;
+
+    const nameItem = document.getElementById('customerNameItem');
+    if (order.customer_name) {
+        document.getElementById('customerNameDisplay').textContent = order.customer_name;
+        nameItem.style.display = '';
+    } else {
+        nameItem.style.display = 'none';
+    }
 
     const time = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
     document.getElementById('orderTime').textContent = time;
@@ -783,7 +799,12 @@ async function completeOrder() {
 
         showSuccess('Pesanan selesai!');
         await loadPendingOrders();
-        setTimeout(() => clearOrder(), 800);
+        const receiptBtn = document.getElementById('receiptBtn');
+        if (receiptBtn && currentToken) {
+            receiptBtn.href = `/customer/receipt/${currentToken}`;
+            receiptBtn.style.display = 'block';
+        }
+        completeBtn.style.display = 'none';
 
     } catch (err) {
         console.error('Complete error:', err);
@@ -800,6 +821,8 @@ function clearOrder() {
     document.querySelectorAll('.pm-btn').forEach(b => b.classList.remove('selected'));
     document.getElementById('paymentMethodSection').style.display = 'none';
     document.getElementById('orderCard').classList.remove('show');
+    document.getElementById('receiptBtn').style.display = 'none';
+    document.getElementById('receiptBtn').href = '#';
     clearMessages();
     document.getElementById('scanInput').focus();
 }
@@ -826,6 +849,7 @@ async function loadPendingOrders() {
                 <div class="pending-item" data-token="${order.tracking_token}">
                     <div class="pending-info">
                         <span class="pending-table">Meja ${order.table_number}</span>
+                        ${order.customer_name ? `<span class="pending-table" style="font-weight:400; color:#696969;">· ${order.customer_name}</span>` : ''}
                         <span class="pending-time">${formatTime(order.created_at)}</span>
                     </div>
                     <span class="pending-total">Rp ${parseInt(order.total_amount).toLocaleString('id-ID')}</span>
@@ -839,6 +863,7 @@ async function loadPendingOrders() {
                 <div class="pending-item paid-item" data-token="${order.tracking_token}">
                     <div class="pending-info">
                         <span class="pending-table">Meja ${order.table_number}</span>
+                        ${order.customer_name ? `<span class="pending-table" style="font-weight:400; color:#696969;">· ${order.customer_name}</span>` : ''}
                         <span class="pending-time">${formatTime(order.created_at)}</span>
                     </div>
                     <span class="pending-total">Rp ${parseInt(order.total_amount).toLocaleString('id-ID')}</span>
