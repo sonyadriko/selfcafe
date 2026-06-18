@@ -717,6 +717,11 @@
                                 Batal
                             </button>
                             {% endif %}
+                            {% if order.status.value in ['paid', 'completed'] %}
+                            <a class="order-action-btn" href="/customer/receipt/{{ order.tracking_token }}" target="_blank">
+                                🖨️ Cetak Struk
+                            </a>
+                            {% endif %}
                             <button class="order-action-btn" onclick="toggleDetails({{ order.id }})">
                                 {{ order.items|length }} item
                             </button>

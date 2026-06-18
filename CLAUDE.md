@@ -77,6 +77,7 @@ Orders generate unique `tracking_token` (UUID v4) for customer tracking and cash
 ```
 GET  /customer/qr/{token}        # QR code image
 GET  /customer/track/{token}     # Customer tracking page
+GET  /customer/receipt/{token}   # Printable receipt (struk), opened from customer tracking, cashier dashboard, and admin orders page
 POST /api/cashier/scan           # Cashier retrieve order by token
 PUT  /api/cashier/pay/{id}       # PENDING → PAID
 PUT  /api/cashier/complete/{id}  # PAID → COMPLETED
