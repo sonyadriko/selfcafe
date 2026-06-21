@@ -233,6 +233,20 @@
     border-color: rgba(220, 38, 38, 0.3);
 }
 
+.menu-card-inactive { opacity: 0.55; }
+
+.menu-card-badge-inactive {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: var(--radius-pill);
+    background: rgba(220, 38, 38, 0.1);
+    color: #DC2626;
+    flex-shrink: 0;
+    margin-left: 8px;
+    white-space: nowrap;
+}
+
 .menu-card-action-btn.delete:hover {
     background: rgba(220, 38, 38, 0.1);
     border-color: #DC2626;
@@ -576,7 +590,7 @@
             {% for menu in menus %}
             {% set stock_status = 'out-of-stock' if menu.stock <= 0 else 'low-stock' if menu.stock <= 10 else 'in-stock' %}
             {% set stock_label = 'Habis' if menu.stock <= 0 else 'Menipis' if menu.stock <= 10 else menu.stock ~ ' tersedia' %}
-            <div class="menu-card" data-id="{{ menu.id }}">
+            <div class="menu-card{{ ' menu-card-inactive' if not menu.is_active else '' }}" data-id="{{ menu.id }}">
                 {% if menu.image_url %}
                 <img src="{{ menu.image_url }}" alt="{{ menu.name }}" class="menu-card-image">
                 {% else %}
@@ -586,7 +600,11 @@
                 <div class="menu-card-content">
                     <div class="menu-card-header">
                         <h3 class="menu-card-name">{{ menu.name }}</h3>
+                        {% if not menu.is_active %}
+                        <span class="menu-card-badge-inactive">Nonaktif</span>
+                        {% else %}
                         <span class="menu-card-status {{ stock_status }}" title="Stok: {{ menu.stock }}"></span>
+                        {% endif %}
                     </div>
 
                     <p class="menu-card-description">{{ menu.description or 'Tidak ada deskripsi' }}</p>
@@ -598,6 +616,7 @@
 
                     <div class="menu-card-actions">
                         <button class="menu-card-action-btn" onclick="openEditModal({{ menu.id }})">Edit</button>
+                        <button class="menu-card-action-btn" onclick="toggleMenuActive({{ menu.id }}, '{{ menu.name }}', {{ 'true' if menu.is_active else 'false' }})">{{ 'Aktifkan' if not menu.is_active else 'Nonaktifkan' }}</button>
                         <button class="menu-card-action-btn delete" onclick="deleteMenu({{ menu.id }}, '{{ menu.name }}')">Hapus</button>
                     </div>
                 </div>
@@ -903,10 +922,34 @@ async function deleteMenu(menuId, menuName) {
         const response = await fetch(`/api/menus/${menuId}`, { method: 'DELETE' });
 
         if (response.ok) {
-            showToast('Menu berhasil dihapus', 'success');
+            const data = await response.json();
+            if (data.deactivated) {
+                showToast(`Menu "${menuName}" masih punya riwayat transaksi, dinonaktifkan saja`, 'success');
+            } else {
+                showToast('Menu berhasil dihapus', 'success');
+            }
             setTimeout(() => location.reload(), 500);
         } else {
             throw new Error('Gagal menghapus menu');
+        }
+    } catch (err) {
+        showToast(err.message, 'error');
+    }
+}
+
+// Toggle Menu Active/Inactive
+async function toggleMenuActive(menuId, menuName, isActive) {
+    const action = isActive ? 'menonaktifkan' : 'mengaktifkan';
+    if (!confirm(`${action.charAt(0).toUpperCase() + action.slice(1)} menu "${menuName}"?`)) return;
+
+    try {
+        const response = await fetch(`/api/menus/${menuId}/toggle-active`, { method: 'PUT' });
+
+        if (response.ok) {
+            showToast(`Menu "${menuName}" berhasil di-${isActive ? 'nonaktifkan' : 'aktifkan'}`, 'success');
+            setTimeout(() => location.reload(), 500);
+        } else {
+            throw new Error('Gagal mengubah status menu');
         }
     } catch (err) {
         showToast(err.message, 'error');

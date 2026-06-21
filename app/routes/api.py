@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 from app.database import get_db
 from app.models.menu import Menu
 from app.schemas.menu import MenuCreate, MenuUpdate
@@ -75,13 +76,35 @@ async def delete_menu(
     if not db_menu:
         raise HTTPException(status_code=404, detail="Menu not found")
 
-    # Delete associated image file
-    if db_menu.image_url and not db_menu.image_url.startswith("http"):
-        upload_service.delete_image(db_menu.image_url)
+    try:
+        # Delete associated image file
+        if db_menu.image_url and not db_menu.image_url.startswith("http"):
+            upload_service.delete_image(db_menu.image_url)
 
-    db.delete(db_menu)
+        db.delete(db_menu)
+        db.commit()
+        return {"success": True, "deactivated": False}
+    except IntegrityError:
+        db.rollback()
+        # Menu already has order history (FK constraint) — soft-delete instead
+        db_menu.is_active = False
+        db.commit()
+        return {"success": True, "deactivated": True}
+
+
+@router.put("/menus/{menu_id}/toggle-active")
+async def toggle_menu_active(
+    menu_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    db_menu = db.query(Menu).filter(Menu.id == menu_id).first()
+    if not db_menu:
+        raise HTTPException(status_code=404, detail="Menu not found")
+
+    db_menu.is_active = not db_menu.is_active
     db.commit()
-    return {"success": True}
+    return {"success": True, "is_active": db_menu.is_active}
 
 @router.post("/upload/image")
 async def upload_image(

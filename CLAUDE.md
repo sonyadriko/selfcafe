@@ -84,10 +84,25 @@ PUT  /api/cashier/complete/{id}  # PAID → COMPLETED
 GET  /api/cashier/orders         # List pending orders
 ```
 
+### Menu Management
+
+Menus have an `is_active` flag (default `True`) used to hide items from the customer-facing menu without losing order history.
+
+**Endpoints:**
+```
+GET    /api/menus/{id}              # Get single menu
+POST   /api/menus                   # Create menu
+PUT    /api/menus/{id}               # Update menu (any field incl. is_active)
+DELETE /api/menus/{id}               # Delete menu; soft-deletes (is_active=False) instead if order history exists (FK constraint)
+PUT    /api/menus/{id}/toggle-active # Flip is_active on/off
+```
+
+`GET /customer/*` menu listing filters `Menu.is_active == True`; admin menu grid shows inactive items with a "Nonaktif" badge and an Aktifkan/Nonaktifkan toggle button.
+
 ### Models (SQLAlchemy)
 
 - **User** - Admin/Staff/Kasir roles with bcrypt password hashing
-- **Category/Menu** - Menu items with categories, stock tracking
+- **Category/Menu** - Menu items with categories, stock tracking, `is_active` flag for soft-delete
 - **Order/OrderItem** - Orders with status (pending/paid/completed/cancelled), includes `customer_name` field collected at checkout
 - **Promo** - Discounts (percentage/fixed) with date ranges
 
